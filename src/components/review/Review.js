@@ -1,15 +1,8 @@
 import React from 'react';
-import { Avatar, Box, Typography, Paper, Rating, ImageList, ImageListItem } from '@mui/material';
+import { Avatar, Box, Typography, Paper, ImageList, ImageListItem } from '@mui/material';
 import { format } from 'date-fns';
 
-const RatingItem = ({ label, value }) => (
-  <Box>
-    <Typography variant="body2" color="textSecondary">
-      {label}
-    </Typography>
-    <Rating value={value} readOnly />
-  </Box>
-);
+import { RatingItem } from './RatingItem';
 
 export const Review = ({ avatarUrl, name, date, ratings, review, images }) => {
   const formattedDate = format(new Date(date), 'dd.MM.yyyy');
@@ -18,31 +11,22 @@ export const Review = ({ avatarUrl, name, date, ratings, review, images }) => {
   const averageRating = Math.round((serviceQuality + productQuality + deliveryQuality) / 3);
 
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        border: 'solid 1px #B6B5B5',
-        borderRadius: '3px',
-        py: 2,
-        px: 4,
-        display: 'flex',
-      }}
-    >
-      <Avatar src={avatarUrl} alt={name[0]} sx={{ mr: 2, width: '54px', height: '54px' }} />
+    <Paper elevation={0} sx={sx.paper}>
+      <Avatar src={avatarUrl} alt={name[0]} sx={sx.avatar} />
 
       <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Box sx={sx.header}>
           <Box>
-            <Typography variant="subtitle1" sx={{ fontSize: '0.8rem', color: '#B6B5B5' }}>
+            <Typography variant="subtitle1" sx={sx.date}>
               {formattedDate}
             </Typography>
             <Typography variant="h6">{name}</Typography>
           </Box>
-          <Box sx={{ flexGrow: 1 }} />
+          <Box sx={sx.averageRating} />
           <RatingItem label="" value={averageRating} size="large" />
         </Box>
 
-        <Box sx={{ width: '35%', display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+        <Box sx={sx.ratings}>
           <RatingItem label="Quality of service" value={serviceQuality} />
           <RatingItem label="Product quality" value={productQuality} />
           <RatingItem label="Delivery quality" value={deliveryQuality} />
@@ -53,16 +37,9 @@ export const Review = ({ avatarUrl, name, date, ratings, review, images }) => {
         </Typography>
 
         {images && images.length > 0 && (
-          <ImageList
-            sx={{
-              display: 'flex',
-              overflowX: 'auto',
-            }}
-            cols={images.length}
-            gap={20}
-          >
+          <ImageList sx={sx.imageList} cols={images.length} gap={20}>
             {images.map(item => (
-              <ImageListItem key={item.id} sx={{ flexShrink: 0 }}>
+              <ImageListItem key={item.id} sx={sx.imageItem}>
                 <img
                   src={item.src}
                   alt=""
@@ -76,4 +53,21 @@ export const Review = ({ avatarUrl, name, date, ratings, review, images }) => {
       </Box>
     </Paper>
   );
+};
+
+const sx = {
+  paper: {
+    border: 'solid 1px #B6B5B5',
+    borderRadius: '3px',
+    py: 2,
+    px: 4,
+    display: 'flex',
+  },
+  avatar: { mr: 2, width: '54px', height: '54px' },
+  header: { display: 'flex', alignItems: 'center', mb: 2 },
+  date: { fontSize: '0.8rem', color: '#B6B5B5' },
+  ratings: { width: '35%', display: 'flex', justifyContent: 'space-between', mb: 2 },
+  averageRating: { flexGrow: 1 },
+  imageList: { display: 'flex', overflowX: 'auto' },
+  imageItem: { flexShrink: 0 },
 };
