@@ -1,35 +1,36 @@
 import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
 import { CssBaseline } from '@mui/material';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 
-import { Review } from './components/review/Review';
-import reviewData from './data/ReviewData.json';
+import { THEME } from './theme';
 
-const theme = createTheme({
-  palette: {
-    text: {
-      primary: '#333333',
-      secondary: '#777777',
-    },
-  },
-  typography: {
-    fontFamily: 'Montserrat, sans-serif',
-  },
-});
+import { ModalsProvider } from './providers';
+
+import { ReviewForm } from './components/review';
+import { ReviewPage } from './pages';
 
 export const App = () => {
   return (
     <React.StrictMode>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <div style={{ padding: '20px' }}>
-          {reviewData.map(data => (
-            <div key={data.id} style={{ marginBottom: '20px' }}>
-              <Review {...data} />
-            </div>
-          ))}
-        </div>
+      <ThemeProvider theme={THEME}>
+        <ModalsProvider>
+          <CssBaseline />
+          <BrowserRouter>
+            <Routes>
+              <Route path="reviews" element={<ReviewPage />} />
+              <Route path="reviews-form" element={<ReviewFormPage />} />
+            </Routes>
+          </BrowserRouter>
+        </ModalsProvider>
       </ThemeProvider>
     </React.StrictMode>
   );
 };
+
+const ReviewFormPage = () => (
+  <div style={{ padding: '50px' }}>
+    <ReviewForm />
+  </div>
+);
