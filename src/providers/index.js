@@ -1,1 +1,2 @@
-export * from './ModalProvider';
+export * from './ModalsProvider';
+export * from './SnackbarsProvider';

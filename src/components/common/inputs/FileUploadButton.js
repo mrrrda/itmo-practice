@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { Button } from '@mui/material';
 import { styled } from '@mui/system';
 
+import MuiButton from '@mui/material/Button';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 
-const StyledFileUploadButton = styled(Button)(({ theme }) => ({
+const Button = styled(MuiButton)(({ theme }) => ({
   backgroundColor: theme.palette.grey[50],
   border: `solid 1px ${theme.palette.grey[400]}`,
   borderRadius: theme.shape.borderRadius,
@@ -19,17 +19,18 @@ const StyledFileUploadButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-export const FileUploadButton = ({ label, onInput, isMultiple = false, ...props }) => {
+export const FileUploadButton = ({ label, isMultiple = false, accept, onInput, ...props }) => {
   return (
-    <StyledFileUploadButton component="label" startIcon={<AttachFileIcon />} {...props}>
+    <Button component="label" startIcon={<AttachFileIcon />} {...props}>
       {label}
       <input
         type="file"
         hidden
         multiple={isMultiple}
+        accept={accept}
         onChange={onInput}
         onClick={e => (e.target.value = null)}
       />
-    </StyledFileUploadButton>
+    </Button>
   );
 };

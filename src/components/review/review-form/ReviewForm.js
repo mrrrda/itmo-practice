@@ -1,11 +1,11 @@
 import React from 'react';
-import { useTheme } from '@emotion/react';
 
 import { useFormik } from 'formik';
-import { formatISO } from 'date-fns';
 import * as yup from 'yup';
+import { formatISO } from 'date-fns';
 
 import {
+  useTheme,
   Box,
   TextField,
   Button,
@@ -15,42 +15,44 @@ import {
   Link,
   Typography,
   IconButton,
-  Snackbar,
-  Alert,
   FormLabel,
+  FormControl,
 } from '@mui/material';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 
-import { ModalsContext } from '../../providers';
+import { MODALS, SNACKBARS } from '../../../constants';
+import { useModal, useSnackbar } from '../../../hooks';
+import { base64FileEncoder } from '../../../utils';
 
-import { AppData } from '../../AppData';
+import { PrimaryButton, FileUploadButton } from '../../common';
 
-import { RatingItem } from './RatingItem';
-import { PrimaryButton } from '../common';
-import { FileUploadButton } from '../common';
+import { LabeledRating } from './components';
 
-// TODO: Store in component / app constants?
 const MAX_UPLOAD_FILES = 10;
 
 const validationSchema = yup.object({
-  name: yup.string().required('Name is required'),
-  email: yup.string().email('Invalid email').required('Email is required'),
+  name: yup
+    .string()
+    .matches(/^[a-zA-Z\\.\s-]+$/, 'Invalid name')
+    .trim()
+    .required('Name is required'),
+  email: yup.string().trim().required('Email is required').email('Invalid email'),
+
   ratings: yup.object().shape({
     serviceQuality: yup.number().min(1, 'Service quality rating is required'),
     productQuality: yup.number().min(1, 'Product quality rating is required'),
     deliveryQuality: yup.number().min(1, 'Delivery quality rating is required'),
   }),
+
   process: yup.boolean().oneOf([true], 'You must agree to have your personal data processed'),
 });
 
 export const ReviewForm = () => {
   const theme = useTheme();
 
-  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
-  const [snackbarMessage, setSnackbarMessage] = React.useState('');
-
-  const { _, close, getState } = React.useContext(ModalsContext);
+  const { closeModal } = useModal();
+  const { openSnackbar } = useSnackbar();
 
   const formik = useFormik({
     initialValues: {
@@ -81,11 +83,21 @@ export const ReviewForm = () => {
 
         formik.resetForm();
 
-        if (getState(AppData.REVIEW_FORM)?.isOpen) {
-          close(AppData.REVIEW_FORM);
-        }
+        openSnackbar(SNACKBARS.REVIEW_FORM, {
+          severity: 'success',
+          message: 'Review sent successfully',
+          anchorOrigin: { vertical: 'top', horizontal: 'right' },
+          autoHideDuration: 4000,
+        });
+        closeModal(MODALS.REVIEW_FORM);
       } catch (e) {
         console.log(e);
+        openSnackbar(SNACKBARS.REVIEW_FORM, {
+          severity: 'error',
+          message: 'Server error',
+          anchorOrigin: { vertical: 'top', horizontal: 'right' },
+          autoHideDuration: 4000,
+        });
       }
     },
   });
@@ -98,52 +110,52 @@ export const ReviewForm = () => {
     formik.setFieldValue(field, value);
   };
 
-  // TODO: Change file store logic
-  const handleFileInput = e => {
+  const handleFileInput = async e => {
     let newFiles = Array.from(e.target.files);
 
-    let imageFiles = newFiles.filter(file => file.type.startsWith('image/'));
-    const nonImageFiles = newFiles.filter(file => !file.type.startsWith('image/'));
-
-    if (nonImageFiles.length) {
-      setSnackbarMessage('Only image files are allowed');
-      setSnackbarOpen(true);
-    }
-
-    const totalFiles = formik.values.files.length + imageFiles.length;
+    const totalFiles = formik.values.files.length + newFiles.length;
 
     if (totalFiles > MAX_UPLOAD_FILES) {
-      imageFiles = imageFiles.slice(0, MAX_UPLOAD_FILES - formik.values.files.length);
-      setSnackbarMessage(`Maximum upload limit of ${MAX_UPLOAD_FILES} files reached`);
-      setSnackbarOpen(true);
+      newFiles = newFiles.slice(0, MAX_UPLOAD_FILES - formik.values.files.length);
+      openSnackbar(SNACKBARS.REVIEW_FORM, {
+        severity: 'error',
+        message: `Maximum upload limit of ${MAX_UPLOAD_FILES} files reached`,
+        anchorOrigin: { vertical: 'top', horizontal: 'right' },
+        autoHideDuration: 4000,
+      });
     }
 
     const existingFiles = formik.values.files.map(file => file.id);
 
-    const duplicates = imageFiles
-      .filter(file => existingFiles.includes(file.name))
-      .map(file => file.name);
+    const duplicates = newFiles.filter(file => existingFiles.includes(file.name)).map(file => file.name);
 
     if (duplicates.length) {
-      imageFiles = imageFiles.filter(file => !duplicates.includes(file.name));
-
-      setSnackbarMessage('Duplicate files are not allowed');
-      setSnackbarOpen(true);
+      newFiles = newFiles.filter(file => !duplicates.includes(file.name));
+      openSnackbar(SNACKBARS.REVIEW_FORM, {
+        severity: 'error',
+        message: 'Duplicate files are not allowed',
+        anchorOrigin: { vertical: 'top', horizontal: 'right' },
+        autoHideDuration: 4000,
+      });
     }
 
-    formik.setFieldValue('files', [
-      ...formik.values.files,
-      ...imageFiles.map(file => ({
-        id: file.name,
-        name: file.name,
-        src: 'https://www.thedailymeal.com/img/gallery/18-gummy-candies-ranked-worst-to-best/l-intro-1684764263.jpg',
-      })),
-    ]);
+    const base64Files = await Promise.all(
+      newFiles.map(async file => {
+        const base64 = await base64FileEncoder(file);
+        return {
+          id: file.name,
+          name: file.name,
+          src: base64,
+        };
+      }),
+    );
+
+    formik.setFieldValue('files', [...formik.values.files, ...base64Files]);
   };
 
   return (
-    <form onSubmit={formik.handleSubmit} style={{ width: '100%' }} noValidate>
-      <Box width="100%" display="flex" flexDirection="column" mt={2}>
+    <form onSubmit={formik.handleSubmit} style={{ width: '100%' }} autoComplete="off" noValidate>
+      <Box mt={4}>
         <Box position="relative" mb={6}>
           <TextField
             required
@@ -151,15 +163,14 @@ export const ReviewForm = () => {
             name="name"
             label="Name"
             type="text"
-            placeholder="Enter your name"
             value={formik.values.name}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
+            FormHelperTextProps={{ sx: sx.error }}
             fullWidth
           />
-          {formik.touched.name && formik.errors.name && (
-            <FormHelperText sx={sx.error}>{formik.errors.name}</FormHelperText>
-          )}
         </Box>
 
         <Box position="relative" mb={6}>
@@ -169,48 +180,77 @@ export const ReviewForm = () => {
             name="email"
             label="Email"
             type="text"
-            placeholder="Enter your email"
+            placeholder="example@domain.tld"
             value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
+            error={formik.touched.email && Boolean(formik.errors.email)}
+            helperText={formik.touched.email && formik.errors.email}
+            FormHelperTextProps={{ sx: sx.error }}
             fullWidth
           />
-          {formik.touched.email && formik.errors.email && (
-            <FormHelperText sx={sx.error}>{formik.errors.email}</FormHelperText>
-          )}
         </Box>
 
-        <Box position="relative" width="100%" display="flex" flexDirection="column" gap={2} mb={6}>
-          <RatingItem
+        <FormControl
+          error={
+            (formik.getFieldMeta('ratings.serviceQuality').touched &&
+              Boolean(formik.getFieldMeta('ratings.serviceQuality').error)) ||
+            (formik.getFieldMeta('ratings.productQuality').touched &&
+              Boolean(formik.getFieldMeta('ratings.productQuality').error)) ||
+            (formik.getFieldMeta('ratings.deliveryQuality').touched &&
+              Boolean(formik.getFieldMeta('ratings.deliveryQuality').error))
+          }
+          sx={sx.ratingsFormControl}
+        >
+          <FormControlLabel
+            required
             label="Service quality"
-            isRequired={true}
-            value={formik.values.ratings.serviceQuality}
-            onChange={value => handleChange('ratings.serviceQuality', value)}
+            labelPlacement="top"
+            control={
+              <LabeledRating
+                value={formik.values.ratings.serviceQuality}
+                onChange={value => handleChange('ratings.serviceQuality', value)}
+              />
+            }
+            sx={sx.ratingsControlLabel}
           />
-          <RatingItem
+          <FormControlLabel
+            required
             label="Product quality"
-            isRequired={true}
-            value={formik.values.ratings.productQuality}
-            onChange={value => handleChange('ratings.productQuality', value)}
+            labelPlacement="top"
+            control={
+              <LabeledRating
+                value={formik.values.ratings.productQuality}
+                onChange={value => handleChange('ratings.productQuality', value)}
+              />
+            }
+            sx={sx.ratingsControlLabel}
           />
-          <RatingItem
+          <FormControlLabel
+            required
             label="Delivery quality"
-            isRequired={true}
-            value={formik.values.ratings.deliveryQuality}
-            onChange={value => handleChange('ratings.deliveryQuality', value)}
+            labelPlacement="top"
+            control={
+              <LabeledRating
+                value={formik.values.ratings.deliveryQuality}
+                onChange={value => handleChange('ratings.deliveryQuality', value)}
+              />
+            }
+            sx={sx.ratingsControlLabel}
           />
 
           {(formik.getFieldMeta('ratings.serviceQuality').touched &&
-            formik.getFieldMeta('ratings.serviceQuality').error) ||
+            Boolean(formik.getFieldMeta('ratings.serviceQuality').error)) ||
           (formik.getFieldMeta('ratings.productQuality').touched &&
-            formik.getFieldMeta('ratings.productQuality').error) ||
+            Boolean(formik.getFieldMeta('ratings.productQuality').error)) ||
           (formik.getFieldMeta('ratings.deliveryQuality').touched &&
-            formik.getFieldMeta('ratings.deliveryQuality').error) ? (
+            Boolean(formik.getFieldMeta('ratings.deliveryQuality').error)) ? (
             <FormHelperText sx={sx.error}>All ratings are required</FormHelperText>
           ) : null}
-        </Box>
+        </FormControl>
 
-        <Box position="relative" mb={2}>
+        {/* TODO (L): Text on label */}
+        <Box mb={2}>
           <TextField
             multiline
             minRows={4}
@@ -224,9 +264,6 @@ export const ReviewForm = () => {
             onBlur={formik.handleBlur}
             fullWidth
           />
-          {formik.touched.review && formik.errors.review && (
-            <FormHelperText sx={sx.error}>{formik.errors.review}</FormHelperText>
-          )}
         </Box>
 
         <Box position="relative" display="flex" flexDirection="column" mb={6}>
@@ -234,12 +271,12 @@ export const ReviewForm = () => {
             <FileUploadButton
               label="Attach files"
               isMultiple={true}
+              accept={'image/*'}
               onInput={handleFileInput}
               sx={sx.fileUploadButton}
             />
           </Box>
           <Box>
-            {/* TODO: Change file store logic */}
             {formik.values.files.map(({ id, name }) => (
               <Box
                 key={id}
@@ -264,36 +301,10 @@ export const ReviewForm = () => {
                 </IconButton>
               </Box>
             ))}
-
-            <Snackbar
-              open={snackbarOpen}
-              autoHideDuration={4000}
-              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-              onClose={() => {
-                setSnackbarOpen(false);
-                formik.setFieldError('files', undefined);
-              }}
-            >
-              <Alert
-                severity="error"
-                variant="filled"
-                onClose={() => {
-                  setSnackbarOpen(false);
-                  formik.setFieldError('files', undefined);
-                }}
-                sx={sx.alert}
-              >
-                {snackbarMessage}
-              </Alert>
-            </Snackbar>
           </Box>
 
           {formik.values.files.length > 1 && (
-            <Button
-              color="primary"
-              sx={sx.deleteAllFilesButton}
-              onClick={() => formik.setFieldValue('files', [])}
-            >
+            <Button color="primary" sx={sx.deleteAllFilesButton} onClick={() => formik.setFieldValue('files', [])}>
               Delete All Files
             </Button>
           )}
@@ -302,10 +313,7 @@ export const ReviewForm = () => {
         <Box position="relative" mb={3}>
           <FormControlLabel
             control={
-              <Switch
-                checked={formik.values.process}
-                onChange={e => handleChange('process', e.target.checked)}
-              />
+              <Switch checked={formik.values.process} onChange={e => handleChange('process', e.target.checked)} />
             }
             label={
               <FormLabel required>
@@ -314,7 +322,9 @@ export const ReviewForm = () => {
             }
           />
           {formik.touched.process && formik.errors.process && (
-            <FormHelperText sx={sx.error}>{formik.errors.process}</FormHelperText>
+            <FormHelperText error sx={sx.error}>
+              {formik.errors.process}
+            </FormHelperText>
           )}
         </Box>
         <PrimaryButton sx={sx.submitButton} type="submit" disabled={formik.isSubmitting}>
@@ -326,15 +336,22 @@ export const ReviewForm = () => {
 };
 
 const sx = {
+  ratingsFormControl: {
+    position: 'relative',
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 2,
+    mb: 6,
+  },
+
+  ratingsControlLabel: { alignItems: 'flex-start', m: 0 },
+
   fileUploadButton: {
     width: '30%',
   },
 
-  alert: theme => ({
-    fontSize: theme.typography.font.XS,
-  }),
-
-  // TODO: (Color) as prop / sx / CSS class?
   deleteAllFilesButton: theme => ({
     alignSelf: 'flex-end',
     fontSize: theme.typography.font.S,
@@ -347,8 +364,8 @@ const sx = {
     position: 'absolute',
     top: '-2em',
     right: 0,
-    color: theme.palette.error.main,
     fontSize: theme.typography.font.XS,
+    m: 0,
   }),
 
   submitButton: {

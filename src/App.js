@@ -1,36 +1,36 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
 import { CssBaseline } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 
 import { THEME } from './theme';
 
-import { ModalsProvider } from './providers';
+import { ModalsProvider, SnackbarsProvider } from './providers';
 
-import { ReviewForm } from './components/review';
-import { ReviewPage } from './pages';
+import { CheckoutPage, ReviewPage } from './pages';
+
+const queryClient = new QueryClient();
 
 export const App = () => {
   return (
     <React.StrictMode>
       <ThemeProvider theme={THEME}>
-        <ModalsProvider>
-          <CssBaseline />
-          <BrowserRouter>
-            <Routes>
-              <Route path="reviews" element={<ReviewPage />} />
-              <Route path="reviews-form" element={<ReviewFormPage />} />
-            </Routes>
-          </BrowserRouter>
-        </ModalsProvider>
+        <QueryClientProvider client={queryClient}>
+          <ModalsProvider>
+            <SnackbarsProvider>
+              <CssBaseline />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="reviews" element={<ReviewPage />} />
+                  <Route path="checkout" element={<CheckoutPage />} />
+                </Routes>
+              </BrowserRouter>
+            </SnackbarsProvider>
+          </ModalsProvider>
+        </QueryClientProvider>
       </ThemeProvider>
     </React.StrictMode>
   );
 };
-
-const ReviewFormPage = () => (
-  <div style={{ padding: '50px' }}>
-    <ReviewForm />
-  </div>
-);

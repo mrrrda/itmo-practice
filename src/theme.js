@@ -1,9 +1,15 @@
 import { createTheme } from '@mui/material/styles';
 
+import StarIcon from '@mui/icons-material/Star';
+
+// TODO (L): Spacings
 export const THEME = createTheme({
   palette: {
     primary: {
       main: '#5073E1',
+    },
+    success: {
+      main: '#2FD32F',
     },
     error: {
       main: '#D32F2F',
@@ -25,12 +31,14 @@ export const THEME = createTheme({
       XS: '0.75rem',
       S: '0.875rem',
       M: '1rem',
-      L: '1.5rem',
+      L: '1.25rem',
+      XL: '1.5rem',
     },
   },
   shape: {
     borderRadius: 2,
   },
+
   components: {
     MuiTextField: {
       defaultProps: {
@@ -81,6 +89,25 @@ export const THEME = createTheme({
           color: 'var(--asterisk-color)',
           marginLeft: '0.1em',
         },
+      },
+    },
+
+    MuiFormControlLabel: {
+      styleOverrides: {
+        root: {
+          '--asterisk-color': '#D32F2F',
+        },
+
+        asterisk: {
+          color: 'var(--asterisk-color)',
+          marginLeft: '0.1em',
+        },
+      },
+    },
+
+    MuiRating: {
+      defaultProps: {
+        emptyIcon: <StarIcon />,
       },
     },
   },

@@ -14,5 +14,3 @@ export const PrimaryButton = styled(Button)(({ theme }) => ({
     backgroundColor: theme.palette.grey[400],
   },
 }));
-
-// TODO: Ripple on hover

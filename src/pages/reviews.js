@@ -1,103 +1,87 @@
 import React from 'react';
-import { useTheme } from '@emotion/react';
+import { useQuery } from 'react-query';
 
-import {
-  Box,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
-  Typography,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { useTheme, Box, Button, Divider, Skeleton, Typography } from '@mui/material';
 
-import { ModalsContext } from '../providers';
-
-import { AppData } from '../AppData';
+import { MODALS } from '../constants';
+import { useModal } from '../hooks';
 
 import { PrimaryButton } from '../components/common';
 import { Review } from '../components/review';
-import { ReviewForm } from '../components/review';
+import { CreateReviewModal } from '../components/modals';
 
+const fetchReviews = async () => {
+  const response = await fetch('http://localhost:3001/reviews');
+  return await response.json();
+};
+
+// TODO: Pagination
 export const ReviewPage = () => {
   const theme = useTheme();
+  const { openModal } = useModal();
 
-  const [reviews, setReviews] = React.useState([]);
-  const { open, close, getState } = React.useContext(ModalsContext);
-
-  // TODO: Rerender on every reviews array change
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/reviews');
-        const data = await response.json();
-        setReviews(data);
-      } catch (error) {
-        console.error('Error fetching reviews:', error);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const {
+    data: reviews,
+    isLoading,
+    error,
+  } = useQuery('reviews', fetchReviews, {
+    refetchOnWindowFocus: false,
+  });
 
   return (
-    <Box px={10} py={4}>
+    <Box width="70%" margin="auto" px={10} py={4}>
+      <Typography
+        variant="h2"
+        fontSize={theme.typography.font.XL}
+        fontWeight={theme.typography.fontWeightRegular}
+        mb={4}
+      >
+        Reviews
+      </Typography>
+
       <Box display="flex" alignItems="center" justifyContent="center" mb={4}>
-        <PrimaryButton onClick={() => open(AppData.REVIEW_FORM)} sx={sx.addReviewButton}>
+        <PrimaryButton onClick={() => openModal(MODALS.REVIEW_FORM)} sx={sx.addReviewButton}>
           Leave Review
         </PrimaryButton>
         <Divider sx={sx.divider} />
       </Box>
 
-      <Box>
-        {reviews.map(data => (
-          <Box key={data.id} mb={4}>
-            <Review {...data} />
-          </Box>
-        ))}
-      </Box>
-
-      {getState(AppData.REVIEW_FORM)?.isOpen && (
-        <Dialog
-          open={true}
-          onClose={() => close(AppData.REVIEW_FORM)}
-          PaperProps={{ sx: sx.dialogPaperProps }}
-          maxWidth={false}
-        >
-          <DialogTitle>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography
-                variant="h2"
-                fontSize={theme.typography.font.L}
-                fontWeight={theme.typography.fontWeightRegular}
-              >
-                Leave your Review
-              </Typography>
-              <IconButton onClick={() => close(AppData.REVIEW_FORM)}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
-          </DialogTitle>
-
-          <DialogContent>
-            <ReviewForm />
-          </DialogContent>
-        </Dialog>
+      {isLoading ? (
+        <Box>
+          {[...Array(3)].map((_, index) => (
+            <Skeleton key={index} variant="rounded" width="100%" height="250px" sx={sx.skeleton} />
+          ))}
+        </Box>
+      ) : error ? (
+        <Box display="flex" justifyContent="center">
+          <Typography variant="body1" color="error" textAlign="center">
+            Error fetching reviews
+          </Typography>
+        </Box>
+      ) : (
+        <Box display="flex" flexDirection="column">
+          {reviews.length === 0 ? (
+            <Typography variant="body1" sx={sx.noReviewsMessage}>
+              No reviews yet. Be the first to leave a review!
+            </Typography>
+          ) : (
+            reviews.map(data => (
+              <Box key={data.id} mb={4}>
+                <Review {...data} />
+              </Box>
+            ))
+          )}
+        </Box>
       )}
+
+      <CreateReviewModal />
     </Box>
   );
 };
 
 const sx = {
   addReviewButton: {
-    width: '10%',
-  },
-
-  dialogPaperProps: {
-    width: '35%',
-    px: 3,
-    py: 2,
+    width: '15%',
   },
 
   divider: theme => ({
@@ -105,4 +89,8 @@ const sx = {
     borderColor: theme.palette.grey[400],
     ml: 6,
   }),
+
+  skeleton: { mb: 4 },
+
+  noReviewsMessage: { alignSelf: 'center' },
 };

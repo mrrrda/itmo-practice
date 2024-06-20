@@ -1,11 +1,18 @@
 import React from 'react';
-import { useTheme } from '@emotion/react';
 
-import { Avatar, Box, Typography, ImageList, ImageListItem } from '@mui/material';
 import { format } from 'date-fns';
 
-// TODO: Import from '.'?
-import { RatingItem } from './RatingItem';
+import {
+  useTheme,
+  Avatar,
+  Box,
+  Typography,
+  ImageList,
+  ImageListItem,
+  Rating,
+  FormControl,
+  FormControlLabel,
+} from '@mui/material';
 
 export const Review = ({ name, date, ratings, review, files }) => {
   const theme = useTheme();
@@ -16,35 +23,44 @@ export const Review = ({ name, date, ratings, review, files }) => {
   const averageRating = Math.round((serviceQuality + productQuality + deliveryQuality) / 3);
 
   return (
-    <Box
-      display="flex"
-      border={`solid 1px ${theme.palette.grey[400]}`}
-      borderRadius={theme.shape.borderRadius}
-      px={4}
-      py={3}
-    >
+    <Box display="flex" border={`solid 1px ${theme.palette.grey[400]}`} borderRadius={theme.shape.borderRadius} p={4}>
       <Avatar sx={sx.avatar} />
 
       <Box flexGrow={1}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Box>
-            <Typography
-              variant="subtitle1"
-              fontSize={theme.typography.font.S}
-              color={theme.palette.grey[400]}
-            >
+            <Typography variant="subtitle1" fontSize={theme.typography.font.S} color={theme.palette.grey[400]}>
               {formattedDate}
             </Typography>
             <Typography variant="h6">{name}</Typography>
           </Box>
-          <RatingItem label="" value={averageRating} isReadOnly={true} />
+
+          <Rating value={averageRating} readOnly />
         </Box>
 
-        <Box width="35%" display="flex" justifyContent="space-between" mb={3}>
-          <RatingItem label="Service quality" value={serviceQuality} isReadOnly={true} />
-          <RatingItem label="Product quality" value={productQuality} isReadOnly={true} />
-          <RatingItem label="Delivery quality" value={deliveryQuality} isReadOnly={true} />
-        </Box>
+        {/* TODO (L): Number convertion */}
+        <FormControl sx={sx.ratingsFormControl}>
+          <FormControlLabel
+            label="Service quality"
+            labelPlacement="top"
+            control={<Rating value={Number(serviceQuality)} readOnly />}
+            sx={sx.ratingsControlLabel}
+          />
+
+          <FormControlLabel
+            label="Product quality"
+            labelPlacement="top"
+            control={<Rating value={Number(productQuality)} readOnly />}
+            sx={sx.ratingsControlLabel}
+          />
+
+          <FormControlLabel
+            label="Delivery quality"
+            labelPlacement="top"
+            control={<Rating value={Number(deliveryQuality)} readOnly />}
+            sx={sx.ratingsControlLabel}
+          />
+        </FormControl>
 
         {review && (
           <Typography variant="body1" color={theme.palette.text.secondary}>
@@ -52,17 +68,11 @@ export const Review = ({ name, date, ratings, review, files }) => {
           </Typography>
         )}
 
-        {/* TODO */}
         {files && files.length > 0 && (
           <ImageList sx={sx.imageList} cols={files.length} gap={20}>
             {files.map(item => (
               <ImageListItem key={item.id} sx={sx.imageItem}>
-                <img
-                  src={item.src}
-                  alt=""
-                  loading="lazy"
-                  style={{ maxWidth: '400px', maxHeight: '200px' }}
-                />
+                <img src={item.src} alt="" loading="lazy" style={{ maxWidth: '400px', maxHeight: '200px' }} />
               </ImageListItem>
             ))}
           </ImageList>
@@ -77,6 +87,19 @@ const sx = {
     width: '54px',
     height: '54px',
     mr: 4,
+  },
+
+  ratingsFormControl: {
+    width: '40%',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    mb: 3,
+  },
+
+  ratingsControlLabel: {
+    cursor: 'default',
+    m: 0,
   },
 
   imageList: {

@@ -5,7 +5,7 @@ export const ModalsContext = React.createContext({});
 export const ModalsProvider = ({ children }) => {
   const [modalsRegistry, setModalsRegistry] = React.useState({});
 
-  function open(key, args = {}) {
+  const openModal = (key, args = {}) =>
     setModalsRegistry(prevModalsRegistry => ({
       ...prevModalsRegistry,
       [key]: {
@@ -13,9 +13,8 @@ export const ModalsProvider = ({ children }) => {
         args,
       },
     }));
-  }
 
-  function close(key) {
+  const closeModal = key =>
     setModalsRegistry(prevModalsRegistry => ({
       ...prevModalsRegistry,
       [key]: {
@@ -23,21 +22,17 @@ export const ModalsProvider = ({ children }) => {
         args: prevModalsRegistry[key]?.args ?? {},
       },
     }));
-  }
 
-  function getState(key) {
-    return (
-      modalsRegistry[key] ?? {
-        isOpen: false,
-        args: {},
-      }
-    );
-  }
+  const getModalState = key =>
+    modalsRegistry[key] ?? {
+      isOpen: false,
+      args: {},
+    };
 
   const contextValue = {
-    open,
-    close,
-    getState,
+    openModal,
+    closeModal,
+    getModalState,
   };
 
   return <ModalsContext.Provider value={contextValue}>{children}</ModalsContext.Provider>;
