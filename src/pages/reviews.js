@@ -1,32 +1,31 @@
 import React from 'react';
 import { useQuery } from 'react-query';
 
-import { useTheme, Box, Button, Divider, Skeleton, Typography } from '@mui/material';
+import { useTheme, Box, Divider, Skeleton, Typography, Button } from '@mui/material';
 
 import { MODALS } from '../constants';
 import { useModal } from '../hooks';
+import { getReviews } from '../api';
 
 import { PrimaryButton } from '../components/common';
 import { Review } from '../components/review';
 import { CreateReviewModal } from '../components/modals';
 
-const fetchReviews = async () => {
-  const response = await fetch('http://localhost:3001/reviews');
-  return await response.json();
-};
+const LIMIT = 2;
 
-// TODO: Pagination
 export const ReviewPage = () => {
+  const [page, setPage] = React.useState(1);
+
   const theme = useTheme();
   const { openModal } = useModal();
 
-  const {
-    data: reviews,
-    isLoading,
-    error,
-  } = useQuery('reviews', fetchReviews, {
+  const { isLoading, isError, data, isFetched } = useQuery(['reviews', page, LIMIT], () => getReviews(page, LIMIT), {
+    keepPreviousData: true,
     refetchOnWindowFocus: false,
+    retry: 2,
   });
+
+  const hasNext = data?.totalCount && data.totalCount > page * LIMIT;
 
   return (
     <Box width="70%" margin="auto" px={10} py={4}>
@@ -34,7 +33,7 @@ export const ReviewPage = () => {
         variant="h2"
         fontSize={theme.typography.font.XL}
         fontWeight={theme.typography.fontWeightRegular}
-        mb={4}
+        mb={2}
       >
         Reviews
       </Typography>
@@ -48,11 +47,11 @@ export const ReviewPage = () => {
 
       {isLoading ? (
         <Box>
-          {[...Array(3)].map((_, index) => (
+          {[0, 0, 0].map((_, index) => (
             <Skeleton key={index} variant="rounded" width="100%" height="250px" sx={sx.skeleton} />
           ))}
         </Box>
-      ) : error ? (
+      ) : isError ? (
         <Box display="flex" justifyContent="center">
           <Typography variant="body1" color="error" textAlign="center">
             Error fetching reviews
@@ -60,17 +59,27 @@ export const ReviewPage = () => {
         </Box>
       ) : (
         <Box display="flex" flexDirection="column">
-          {reviews.length === 0 ? (
+          {data.reviews.length === 0 && page == 1 ? (
             <Typography variant="body1" sx={sx.noReviewsMessage}>
               No reviews yet. Be the first to leave a review!
             </Typography>
           ) : (
-            reviews.map(data => (
-              <Box key={data.id} mb={4}>
+            data.reviews.map(data => (
+              <Box key={data.id} mb={4} sx={{ opacity: isFetched ? 1 : 0.5 }}>
                 <Review {...data} />
               </Box>
             ))
           )}
+
+          {/* Q: isPreviousData */}
+          <Box display="flex" justifyContent="space-between">
+            <Box>{page !== 1 && <Button onClick={() => setPage(page - 1)}>Prev</Button>}</Box>
+            <Box>
+              <Box display="flex" alignItems="center">
+                {hasNext && <Button onClick={() => setPage(page + 1)}>Next</Button>}
+              </Box>
+            </Box>
+          </Box>
         </Box>
       )}
 

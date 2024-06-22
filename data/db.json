@@ -79,6 +79,51 @@
       "date": "2024-06-20"
     }
   ],
-
-  "orders": []
+  "orders": [
+    {
+      "id": "77da",
+      "customerType": "naturalPerson",
+      "paymentMethod": "cash",
+      "customerInfo": {
+        "fullName": "Mariya Izerakova",
+        "email": "m@m",
+        "phone": "+7 (791) 249-18-24",
+        "comment": ""
+      },
+      "process": true,
+      "date": "2024-06-21"
+    },
+    {
+      "id": "eb21",
+      "customerType": "juridicalPerson",
+      "paymentMethod": "account",
+      "customerInfo": {
+        "companyName": "TestCompany1",
+        "INN": "2143512343",
+        "KPP": "214341234",
+        "contactPerson": "Mariya",
+        "email": "m@m",
+        "phone": "+7 (382) 933-45-53",
+        "comment": "TestComment"
+      },
+      "process": true,
+      "date": "2024-06-21"
+    },
+    {
+      "id": "174f",
+      "customerType": "juridicalPerson",
+      "paymentMethod": "cash",
+      "customerInfo": {
+        "companyName": "TestCompany2",
+        "INN": "",
+        "KPP": "",
+        "contactPerson": "Andrey",
+        "email": "a@a",
+        "phone": "+7 (123) 425-64-31",
+        "comment": ""
+      },
+      "process": true,
+      "date": "2024-06-21"
+    }
+  ]
 }

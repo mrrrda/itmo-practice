@@ -1,3 +1,6 @@
+// TODO (L):
+// TODO (L): package.json
+// TODO (L): Vite
 {
   "extends": [
     "eslint:recommended",

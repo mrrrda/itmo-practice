@@ -2,17 +2,7 @@ import React from 'react';
 
 import { format } from 'date-fns';
 
-import {
-  useTheme,
-  Avatar,
-  Box,
-  Typography,
-  ImageList,
-  ImageListItem,
-  Rating,
-  FormControl,
-  FormControlLabel,
-} from '@mui/material';
+import { useTheme, Avatar, Box, Typography, ImageList, ImageListItem, Rating } from '@mui/material';
 
 export const Review = ({ name, date, ratings, review, files }) => {
   const theme = useTheme();
@@ -20,7 +10,7 @@ export const Review = ({ name, date, ratings, review, files }) => {
   const formattedDate = format(new Date(date), 'dd.MM.yyyy');
 
   const { serviceQuality, productQuality, deliveryQuality } = ratings;
-  const averageRating = Math.round((serviceQuality + productQuality + deliveryQuality) / 3);
+  const averageRating = (serviceQuality + productQuality + deliveryQuality) / 3;
 
   return (
     <Box display="flex" border={`solid 1px ${theme.palette.grey[400]}`} borderRadius={theme.shape.borderRadius} p={4}>
@@ -35,32 +25,25 @@ export const Review = ({ name, date, ratings, review, files }) => {
             <Typography variant="h6">{name}</Typography>
           </Box>
 
-          <Rating value={averageRating} readOnly />
+          <Rating value={averageRating} readOnly precision={0.5} />
         </Box>
 
-        {/* TODO (L): Number convertion */}
-        <FormControl sx={sx.ratingsFormControl}>
-          <FormControlLabel
-            label="Service quality"
-            labelPlacement="top"
-            control={<Rating value={Number(serviceQuality)} readOnly />}
-            sx={sx.ratingsControlLabel}
-          />
+        <Box width="40%" display="flex" justifyContent="space-between" mb={3}>
+          <Box>
+            <Typography variant="subtitle1">Service quality</Typography>
+            <Rating value={serviceQuality} readOnly />
+          </Box>
 
-          <FormControlLabel
-            label="Product quality"
-            labelPlacement="top"
-            control={<Rating value={Number(productQuality)} readOnly />}
-            sx={sx.ratingsControlLabel}
-          />
+          <Box>
+            <Typography variant="subtitle1">Product quality</Typography>
+            <Rating value={productQuality} readOnly />
+          </Box>
 
-          <FormControlLabel
-            label="Delivery quality"
-            labelPlacement="top"
-            control={<Rating value={Number(deliveryQuality)} readOnly />}
-            sx={sx.ratingsControlLabel}
-          />
-        </FormControl>
+          <Box>
+            <Typography variant="subtitle1">Delivery quality</Typography>
+            <Rating value={deliveryQuality} readOnly />
+          </Box>
+        </Box>
 
         {review && (
           <Typography variant="body1" color={theme.palette.text.secondary}>
@@ -87,19 +70,6 @@ const sx = {
     width: '54px',
     height: '54px',
     mr: 4,
-  },
-
-  ratingsFormControl: {
-    width: '40%',
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    mb: 3,
-  },
-
-  ratingsControlLabel: {
-    cursor: 'default',
-    m: 0,
   },
 
   imageList: {

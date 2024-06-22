@@ -13,7 +13,7 @@ export const CheckoutPage = () => {
         variant="h2"
         fontSize={theme.typography.font.XL}
         fontWeight={theme.typography.fontWeightRegular}
-        mb={4}
+        mb={2}
       >
         Checkout
       </Typography>

@@ -11,7 +11,7 @@ export const ModalBase = ({ modalId, onClose, title, children }) => {
   const state = getModalState(modalId);
 
   return (
-    <Dialog open={state.isOpen} onClose={onClose} PaperProps={{ sx: sx.dialogPaperProps }} maxWidth={false}>
+    <Dialog open={state.isOpen} onClose={onClose} PaperProps={paperProps} maxWidth={false}>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h2" fontSize={theme.typography.font.XL} fontWeight={theme.typography.fontWeightRegular}>
@@ -28,10 +28,6 @@ export const ModalBase = ({ modalId, onClose, title, children }) => {
   );
 };
 
-const sx = {
-  dialogPaperProps: {
-    width: '35%',
-    px: 3,
-    py: 2,
-  },
+const paperProps = {
+  sx: { width: '35%', px: 3, py: 2 },
 };

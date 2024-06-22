@@ -11,14 +11,16 @@ const marks = {
   5: 'Excellent',
 };
 
-export const LabeledRating = ({ value, onChange, ...props }) => {
+export const LabeledRating = ({ value, onChange, onBlur, name, ...props }) => {
   const [hover, setHover] = React.useState(-1);
 
   return (
     <Box display="flex">
       <Rating
+        name={name}
         value={value}
-        onChange={(_, value) => onChange(value || 0)}
+        onChange={onChange}
+        onBlur={onBlur}
         onChangeActive={(_, hover) => setHover(hover)}
         onMouseLeave={() => setHover(-1)}
         {...props}

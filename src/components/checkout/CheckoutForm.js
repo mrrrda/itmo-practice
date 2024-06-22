@@ -24,6 +24,7 @@ import {
 
 import { SNACKBARS } from '../../constants';
 import { useSnackbar } from '../../hooks';
+import { postOrders } from '../../api';
 
 import { Radio, PrimaryButton, PhoneMask } from '../common';
 
@@ -117,7 +118,7 @@ const validationSchema = yup.object().shape({
             .trim()
             .required('Name is required'),
         }),
-      otherwise: schema => schema.shape({}),
+      otherwise: schema => schema,
     }),
     juridicalPerson: yup.object().when('$customerType', {
       is: 'juridicalPerson',
@@ -138,7 +139,7 @@ const validationSchema = yup.object().shape({
             .trim()
             .required('Contact person is required'),
         }),
-      otherwise: schema => schema.shape({}),
+      otherwise: schema => schema,
     }),
     common: yup.object().shape({
       email: yup.string().trim().required('Email is required').email('Invalid email'),
@@ -164,7 +165,7 @@ export const CheckoutForm = () => {
 
       customerInfo: {
         naturalPerson: {
-          fullName: null,
+          fullName: '',
         },
 
         juridicalPerson: {
@@ -184,18 +185,15 @@ export const CheckoutForm = () => {
       process: false,
     },
 
-    validate: values => {
+    validate: async values => {
       try {
-        validationSchema.validateSync(values, { abortEarly: false, context: { customerType: values.customerType } });
+        await validationSchema.validate(values, { abortEarly: false, context: { customerType: values.customerType } });
       } catch (e) {
         if (e.name !== 'ValidationError') {
           throw e;
         }
 
-        return e.inner.reduce((errors, currentError) => {
-          errors = set(errors, currentError.path, currentError.message);
-          return errors;
-        }, {});
+        return e.inner.reduce((errors, { path, message }) => set(errors, path, message), {});
       }
     },
 
@@ -225,23 +223,19 @@ export const CheckoutForm = () => {
           date: date,
         };
 
-        await fetch('http://localhost:3001/orders', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
+        await postOrders(data);
 
         formik.resetForm();
+
         openSnackbar(SNACKBARS.CHECKOUT_FORM, {
           severity: 'success',
           message: 'Order successfully completed',
           anchorOrigin: { vertical: 'top', horizontal: 'right' },
           autoHideDuration: 4000,
         });
-      } catch (error) {
-        console.error('Error submitting form:', error);
+      } catch (e) {
+        console.log('Error submitting form:', e);
+
         openSnackbar(SNACKBARS.CHECKOUT_FORM, {
           severity: 'error',
           message: 'Server error',
@@ -251,14 +245,6 @@ export const CheckoutForm = () => {
       }
     },
   });
-
-  const handleChange = (field, value) => {
-    if (!formik.touched[field]) {
-      formik.setFieldTouched(field, true);
-    }
-
-    formik.setFieldValue(field, value);
-  };
 
   return (
     <form onSubmit={formik.handleSubmit} style={{ width: '100%', margin: 'auto' }} autoComplete="off" noValidate>
@@ -273,23 +259,21 @@ export const CheckoutForm = () => {
         >
           <AccountCircleOutlinedIcon color="primary" sx={sx.icon} />
 
-          <Box>
-            <FormControl>
-              <FormLabel sx={sx.formLabel}>Customer Type</FormLabel>
-              <RadioGroup
-                name="customerType"
-                value={formik.values.customerType}
-                onChange={e => {
-                  formik.resetForm();
-                  formik.setFieldValue('customerType', e.target.value, false);
-                }}
-                row
-              >
-                <FormControlLabel control={<Radio value="naturalPerson" />} label="Natural Person" />
-                <FormControlLabel control={<Radio value="juridicalPerson" />} label="Juridical Person" />
-              </RadioGroup>
-            </FormControl>
-          </Box>
+          <FormControl>
+            <FormLabel sx={sx.formLabel}>Customer Type</FormLabel>
+            <RadioGroup
+              row
+              name="customerType"
+              value={formik.values.customerType}
+              onChange={e => {
+                formik.resetForm();
+                formik.setFieldValue('customerType', e.target.value, false);
+              }}
+            >
+              <FormControlLabel label="Natural Person" control={<Radio value="naturalPerson" />} />
+              <FormControlLabel label="Juridical Person" control={<Radio value="juridicalPerson" />} />
+            </RadioGroup>
+          </FormControl>
         </Box>
 
         <Box
@@ -306,15 +290,15 @@ export const CheckoutForm = () => {
             <FormControl>
               <FormLabel sx={sx.formLabel}>Payment Method</FormLabel>
               <RadioGroup
+                row
                 name="paymentMethod"
                 value={formik.values.paymentMethod}
                 onChange={e => formik.setFieldValue('paymentMethod', e.target.value)}
-                row
               >
-                <FormControlLabel control={<Radio value="cash" />} label="Cash" />
+                <FormControlLabel label="Cash" control={<Radio value="cash" />} />
 
                 {formik.values.customerType === 'juridicalPerson' && (
-                  <FormControlLabel control={<Radio value="account" />} label="Account" />
+                  <FormControlLabel label="Account" control={<Radio value="account" />} />
                 )}
               </RadioGroup>
             </FormControl>
@@ -421,13 +405,19 @@ export const CheckoutForm = () => {
 
         <Box position="relative" mb={3}>
           <FormControlLabel
+            required
             control={
-              <Switch checked={formik.values.process} onChange={e => handleChange('process', e.target.checked)} />
+              <Switch
+                name="process"
+                checked={formik.values.process}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
             }
             label={
-              <FormLabel required>
+              <Typography variant="span">
                 Agree to have my <Link href="#">personal data</Link> processed
-              </FormLabel>
+              </Typography>
             }
           />
           {formik.touched.process && formik.errors.process && (

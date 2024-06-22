@@ -15,7 +15,6 @@ import {
   Link,
   Typography,
   IconButton,
-  FormLabel,
   FormControl,
 } from '@mui/material';
 
@@ -24,9 +23,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { MODALS, SNACKBARS } from '../../../constants';
 import { useModal, useSnackbar } from '../../../hooks';
 import { base64FileEncoder } from '../../../utils';
+import { postReviews } from '../../../api';
 
 import { PrimaryButton, FileUploadButton } from '../../common';
-
 import { LabeledRating } from './components';
 
 const MAX_UPLOAD_FILES = 10;
@@ -73,13 +72,7 @@ export const ReviewForm = () => {
         const date = formatISO(Date.now(), { representation: 'date' });
         const data = { ...values, date };
 
-        await fetch('http://localhost:3001/reviews', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
+        await postReviews(data);
 
         formik.resetForm();
 
@@ -89,9 +82,11 @@ export const ReviewForm = () => {
           anchorOrigin: { vertical: 'top', horizontal: 'right' },
           autoHideDuration: 4000,
         });
+
         closeModal(MODALS.REVIEW_FORM);
       } catch (e) {
-        console.log(e);
+        console.log('Error submitting form:', e);
+
         openSnackbar(SNACKBARS.REVIEW_FORM, {
           severity: 'error',
           message: 'Server error',
@@ -101,14 +96,6 @@ export const ReviewForm = () => {
       }
     },
   });
-
-  const handleChange = (field, value) => {
-    if (!formik.touched[field]) {
-      formik.setFieldTouched(field, true);
-    }
-
-    formik.setFieldValue(field, value);
-  };
 
   const handleFileInput = async e => {
     let newFiles = Array.from(e.target.files);
@@ -191,14 +178,15 @@ export const ReviewForm = () => {
           />
         </Box>
 
+        {/* TODO (L): Number conversion */}
         <FormControl
           error={
-            (formik.getFieldMeta('ratings.serviceQuality').touched &&
-              Boolean(formik.getFieldMeta('ratings.serviceQuality').error)) ||
-            (formik.getFieldMeta('ratings.productQuality').touched &&
-              Boolean(formik.getFieldMeta('ratings.productQuality').error)) ||
-            (formik.getFieldMeta('ratings.deliveryQuality').touched &&
-              Boolean(formik.getFieldMeta('ratings.deliveryQuality').error))
+            formik.touched.ratings &&
+            Boolean(
+              formik.errors.ratings?.serviceQuality ||
+                formik.errors.ratings?.productQuality ||
+                formik.errors.ratings?.deliveryQuality,
+            )
           }
           sx={sx.ratingsFormControl}
         >
@@ -208,8 +196,10 @@ export const ReviewForm = () => {
             labelPlacement="top"
             control={
               <LabeledRating
-                value={formik.values.ratings.serviceQuality}
-                onChange={value => handleChange('ratings.serviceQuality', value)}
+                name="ratings.serviceQuality"
+                value={Number(formik.values.ratings.serviceQuality)}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
             }
             sx={sx.ratingsControlLabel}
@@ -220,8 +210,10 @@ export const ReviewForm = () => {
             labelPlacement="top"
             control={
               <LabeledRating
-                value={formik.values.ratings.productQuality}
-                onChange={value => handleChange('ratings.productQuality', value)}
+                name="ratings.productQuality"
+                value={Number(formik.values.ratings.productQuality)}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
             }
             sx={sx.ratingsControlLabel}
@@ -232,21 +224,21 @@ export const ReviewForm = () => {
             labelPlacement="top"
             control={
               <LabeledRating
-                value={formik.values.ratings.deliveryQuality}
-                onChange={value => handleChange('ratings.deliveryQuality', value)}
+                name="ratings.deliveryQuality"
+                value={Number(formik.values.ratings.deliveryQuality)}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
               />
             }
             sx={sx.ratingsControlLabel}
           />
 
-          {(formik.getFieldMeta('ratings.serviceQuality').touched &&
-            Boolean(formik.getFieldMeta('ratings.serviceQuality').error)) ||
-          (formik.getFieldMeta('ratings.productQuality').touched &&
-            Boolean(formik.getFieldMeta('ratings.productQuality').error)) ||
-          (formik.getFieldMeta('ratings.deliveryQuality').touched &&
-            Boolean(formik.getFieldMeta('ratings.deliveryQuality').error)) ? (
-            <FormHelperText sx={sx.error}>All ratings are required</FormHelperText>
-          ) : null}
+          {formik.touched.ratings &&
+            (formik.errors.ratings?.serviceQuality ||
+              formik.errors.ratings?.productQuality ||
+              formik.errors.ratings?.deliveryQuality) && (
+              <FormHelperText sx={sx.error}>All ratings are required</FormHelperText>
+            )}
         </FormControl>
 
         {/* TODO (L): Text on label */}
@@ -312,13 +304,19 @@ export const ReviewForm = () => {
 
         <Box position="relative" mb={3}>
           <FormControlLabel
+            required
             control={
-              <Switch checked={formik.values.process} onChange={e => handleChange('process', e.target.checked)} />
+              <Switch
+                name="process"
+                checked={formik.values.process}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
             }
             label={
-              <FormLabel required>
+              <Typography variant="span">
                 Agree to have my <Link href="#">personal data</Link> processed
-              </FormLabel>
+              </Typography>
             }
           />
           {formik.touched.process && formik.errors.process && (
