@@ -1,11 +1,11 @@
-import React from 'react';
+import { createContext, useState } from 'react';
 
 import { Snackbar } from '../components/common';
 
-export const SnackbarsContext = React.createContext({});
+export const SnackbarsContext = createContext({});
 
 export const SnackbarsProvider = ({ children }) => {
-  const [snackbarsRegistry, setSnackbarsRegistry] = React.useState({});
+  const [snackbarsRegistry, setSnackbarsRegistry] = useState({});
 
   const openSnackbar = (key, args = {}) =>
     setSnackbarsRegistry(prevSnackbarsRegistry => ({

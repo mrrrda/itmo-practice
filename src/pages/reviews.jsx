@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { useQuery } from 'react-query';
 
 import { useTheme, Box, Divider, Skeleton, Typography, Button } from '@mui/material';
@@ -14,7 +14,7 @@ import { CreateReviewModal } from '../components/modals';
 const LIMIT = 2;
 
 export const ReviewPage = () => {
-  const [page, setPage] = React.useState(1);
+  const [page, setPage] = useState(1);
 
   const theme = useTheme();
   const { openModal } = useModal();

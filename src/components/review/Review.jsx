@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { format } from 'date-fns';
 
 import { useTheme, Avatar, Box, Typography, ImageList, ImageListItem, Rating } from '@mui/material';

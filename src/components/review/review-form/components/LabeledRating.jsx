@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 
 import { Box, Rating, Typography } from '@mui/material';
 
@@ -12,7 +12,7 @@ const marks = {
 };
 
 export const LabeledRating = ({ value, onChange, onBlur, name, ...props }) => {
-  const [hover, setHover] = React.useState(-1);
+  const [hover, setHover] = useState(-1);
 
   return (
     <Box display="flex">

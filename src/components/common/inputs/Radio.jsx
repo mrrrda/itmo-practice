@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { styled } from '@mui/material';
 
 import MuiRadio from '@mui/material/Radio';

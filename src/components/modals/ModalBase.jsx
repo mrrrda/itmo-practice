@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useModal } from '../../hooks';
 
 import { Box, Dialog, DialogContent, DialogTitle, IconButton, Typography, useTheme } from '@mui/material';

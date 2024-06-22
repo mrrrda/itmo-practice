@@ -1,5 +1,5 @@
 export const getReviews = async (page, limit) => {
-  const response = await fetch(`http://localhost:3001/reviews?_page=${page}&_limit=${limit}`);
+  const response = await fetch(`${import.meta.env.VITE_REVIEWS_API_URL}?_page=${page}&_limit=${limit}`);
 
   if (response.status !== 200) {
     throw new Error(`Failed to fetch reviews. Status: ${response.status}`);
@@ -12,7 +12,7 @@ export const getReviews = async (page, limit) => {
 };
 
 export const postReviews = async data => {
-  const response = await fetch('http://localhost:3001/reviews', {
+  const response = await fetch(`${import.meta.env.VITE_REVIEWS_API_URL}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ export const postReviews = async data => {
 };
 
 export const postOrders = async data => {
-  const response = await fetch('http://localhost:3001/orders', {
+  const response = await fetch(`${import.meta.env.VITE_ORDERS_API_URL}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

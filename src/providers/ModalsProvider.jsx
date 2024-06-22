@@ -1,9 +1,9 @@
-import React from 'react';
+import { createContext, useState } from 'react';
 
-export const ModalsContext = React.createContext({});
+export const ModalsContext = createContext({});
 
 export const ModalsProvider = ({ children }) => {
-  const [modalsRegistry, setModalsRegistry] = React.useState({});
+  const [modalsRegistry, setModalsRegistry] = useState({});
 
   const openModal = (key, args = {}) =>
     setModalsRegistry(prevModalsRegistry => ({
