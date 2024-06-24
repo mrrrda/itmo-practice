@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { formatISO } from 'date-fns';
@@ -58,135 +59,162 @@ type FormFieldType = {
   InputProps?: Record<string, unknown>;
 };
 
-const NATURAL_PERSON_FIELDS: FormFieldType[] = [
-  {
-    id: 'fullName',
-    name: 'fullName',
-    label: 'Full Name',
-    type: 'text',
-    required: true,
-    fullWidth: true,
-  },
-];
-
-const JURIDICAL_PERSON_FIELDS: FormFieldType[] = [
-  {
-    id: 'companyName',
-    name: 'companyName',
-    label: 'Company Name',
-    type: 'text',
-    required: true,
-    fullWidth: true,
-  },
-  {
-    id: 'INN',
-    name: 'INN',
-    label: 'Taxpayer Identification Number (INN)',
-    type: 'text',
-    fullWidth: true,
-  },
-  {
-    id: 'KPP',
-    name: 'KPP',
-    label: 'Tax Registration Reason Code (KPP) ',
-    type: 'text',
-    fullWidth: true,
-  },
-  {
-    id: 'contactPerson',
-    name: 'contactPerson',
-    label: 'Contact Person',
-    type: 'text',
-    required: true,
-    fullWidth: true,
-  },
-];
-
-const COMMON_FIELDS: FormFieldType[] = [
-  {
-    required: true,
-    id: 'email',
-    name: 'email',
-    label: 'Email',
-    type: 'text',
-    placeholder: 'example@domain.tld',
-    fullWidth: true,
-  },
-  {
-    required: true,
-    id: 'phone',
-    name: 'phone',
-    label: 'Phone Number',
-    type: 'text',
-    placeholder: '+7 (XXX) XXX-XX-XX',
-    InputProps: {
-      inputComponent: PhoneMask,
-    },
-    fullWidth: true,
-  },
-  {
-    multiline: true,
-    minRows: 4,
-    maxRows: 8,
-    id: 'comment',
-    name: 'comment',
-    label: 'Comment',
-    type: 'text',
-    fullWidth: true,
-  },
-];
-
-const validationSchema = yup.object().shape({
-  customerInfo: yup.object().shape({
-    naturalPerson: yup.object().when('$customerType', {
-      is: 'naturalPerson',
-      then: schema =>
-        schema.shape({
-          fullName: yup
-            .string()
-            .matches(/^[a-zA-Z\\.\s-]+$/, 'Invalid name')
-            .trim()
-            .required('Name is required'),
-        }),
-      otherwise: schema => schema,
-    }),
-    juridicalPerson: yup.object().when('$customerType', {
-      is: 'juridicalPerson',
-      then: schema =>
-        schema.shape({
-          companyName: yup.string().trim().required('Company name is required'),
-          INN: yup
-            .string()
-            .nullable()
-            .matches(/^(\d{10}|\d{12})$/, { message: 'Invalid INN', excludeEmptyString: true }),
-          KPP: yup
-            .string()
-            .nullable()
-            .matches(/^\d{4}[\dA-Z][\dA-Z]\d{3}$/, { message: 'Invalid KPP', excludeEmptyString: true }),
-          contactPerson: yup
-            .string()
-            .matches(/^[a-zA-Z\\.\s-]+$/, 'Invalid name')
-            .trim()
-            .required('Contact person is required'),
-        }),
-      otherwise: schema => schema,
-    }),
-    common: yup.object().shape({
-      email: yup.string().trim().required('Email is required').email('Invalid email'),
-      phone: yup
-        .string()
-        .required('Phone number is required')
-        .transform(value => value.replace(/[^\d]/g, ''))
-        .min(11, 'Phone number must contain 11 characters'),
-    }),
-  }),
-  process: yup.boolean().oneOf([true], 'You must agree to have your personal data processed'),
-});
-
 export const CheckoutForm: React.FC = () => {
   const theme = useTheme();
 
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => formik.resetForm(), [i18n.language]);
+
   const { openSnackbar } = useSnackbar();
+
+  const NATURAL_PERSON_FIELDS: FormFieldType[] = useMemo(
+    () => [
+      {
+        id: 'fullName',
+        name: 'fullName',
+        label: t('forms.checkout.fields.customerInfo.fields.fullName'),
+        type: 'text',
+        required: true,
+        fullWidth: true,
+      },
+    ],
+    [i18n.language],
+  );
+
+  const JURIDICAL_PERSON_FIELDS: FormFieldType[] = useMemo(
+    () => [
+      {
+        id: 'companyName',
+        name: 'companyName',
+        label: t('forms.checkout.fields.customerInfo.fields.companyName'),
+        type: 'text',
+        required: true,
+        fullWidth: true,
+      },
+      {
+        id: 'INN',
+        name: 'INN',
+        label: t('forms.checkout.fields.customerInfo.fields.INN'),
+        type: 'text',
+        fullWidth: true,
+      },
+      {
+        id: 'KPP',
+        name: 'KPP',
+        label: t('forms.checkout.fields.customerInfo.fields.KPP'),
+        type: 'text',
+        fullWidth: true,
+      },
+      {
+        id: 'contactPerson',
+        name: 'contactPerson',
+        label: t('forms.checkout.fields.customerInfo.fields.contactPerson'),
+        type: 'text',
+        required: true,
+        fullWidth: true,
+      },
+    ],
+    [i18n.language],
+  );
+
+  const COMMON_FIELDS: FormFieldType[] = useMemo(
+    () => [
+      {
+        required: true,
+        id: 'email',
+        name: 'email',
+        label: t('forms.checkout.fields.customerInfo.fields.email'),
+        type: 'text',
+        placeholder: 'example@domain.tld',
+        fullWidth: true,
+      },
+      {
+        required: true,
+        id: 'phone',
+        name: 'phone',
+        label: t('forms.checkout.fields.customerInfo.fields.phoneNumber'),
+        type: 'text',
+        placeholder: '+7 (XXX) XXX-XX-XX',
+        InputProps: {
+          inputComponent: PhoneMask,
+        },
+        fullWidth: true,
+      },
+      {
+        multiline: true,
+        minRows: 4,
+        maxRows: 8,
+        id: 'comment',
+        name: 'comment',
+        label: t('forms.checkout.fields.customerInfo.fields.comment'),
+        type: 'text',
+        fullWidth: true,
+      },
+    ],
+    [i18n.language],
+  );
+
+  const validationSchema = useMemo(
+    () =>
+      yup.object().shape({
+        customerInfo: yup.object().shape({
+          naturalPerson: yup.object().when('$customerType', {
+            is: 'naturalPerson',
+            then: schema =>
+              schema.shape({
+                fullName: yup
+                  .string()
+                  .matches(/^[a-zа-яA-ZА-Я\\.\s-]+$/, 'Invalid name')
+                  .trim()
+                  .required(t('formValidation.requiredField')),
+              }),
+            otherwise: schema => schema,
+          }),
+          juridicalPerson: yup.object().when('$customerType', {
+            is: 'juridicalPerson',
+            then: schema =>
+              schema.shape({
+                companyName: yup.string().trim().required(t('formValidation.requiredField')),
+                INN: yup
+                  .string()
+                  .nullable()
+                  .matches(/^(\d{10}|\d{12})$/, {
+                    message: t('formValidation.invalidField'),
+                    excludeEmptyString: true,
+                  }),
+                KPP: yup
+                  .string()
+                  .nullable()
+                  .matches(/^\d{4}[\dA-Z][\dA-Z]\d{3}$/, {
+                    message: t('formValidation.invalidField'),
+                    excludeEmptyString: true,
+                  }),
+                contactPerson: yup
+                  .string()
+                  .matches(/^[a-zа-яA-ZА-Я\\.\s-]+$/, t('formValidation.invalidField'))
+                  .trim()
+                  .required(t('formValidation.requiredField')),
+              }),
+            otherwise: schema => schema,
+          }),
+          common: yup.object().shape({
+            email: yup
+              .string()
+              .trim()
+              .required(t('formValidation.requiredField'))
+              .email(t('formValidation.invalidField')),
+            phone: yup
+              .string()
+              .required(t('formValidation.requiredField'))
+              .transform(value => value.replace(/[^\d]/g, ''))
+              .min(11, t('formValidation.invalidField')),
+          }),
+        }),
+        process: yup.boolean().oneOf([true], t('formValidation.requiredProcessAgreement')),
+      }),
+    [i18n.language],
+  );
 
   const formik = useFormik<FormValuesType>({
     initialValues: {
@@ -259,7 +287,7 @@ export const CheckoutForm: React.FC = () => {
 
         openSnackbar(SNACKBARS.CHECKOUT_FORM, {
           severity: 'success',
-          message: 'Order successfully completed',
+          message: t('messages.formSubmitSuccess'),
           anchorOrigin: { vertical: 'top', horizontal: 'right' },
           autoHideDuration: 4000,
         });
@@ -268,7 +296,7 @@ export const CheckoutForm: React.FC = () => {
 
         openSnackbar(SNACKBARS.CHECKOUT_FORM, {
           severity: 'error',
-          message: 'Server error',
+          message: t('messages.serverError'),
           anchorOrigin: { vertical: 'top', horizontal: 'right' },
           autoHideDuration: 4000,
         });
@@ -290,7 +318,7 @@ export const CheckoutForm: React.FC = () => {
           <AccountCircleOutlinedIcon color="primary" sx={sx.icon} />
 
           <FormControl>
-            <FormLabel sx={sx.formLabel}>Customer Type</FormLabel>
+            <FormLabel sx={sx.formLabel}>{t('forms.checkout.fields.customerType.title')}</FormLabel>
             <RadioGroup
               row
               name="customerType"
@@ -300,8 +328,14 @@ export const CheckoutForm: React.FC = () => {
                 formik.setFieldValue('customerType', e.target.value, false);
               }}
             >
-              <FormControlLabel label="Natural Person" control={<Radio value="naturalPerson" />} />
-              <FormControlLabel label="Juridical Person" control={<Radio value="juridicalPerson" />} />
+              <FormControlLabel
+                label={t('forms.checkout.fields.customerType.options.naturalPerson')}
+                control={<Radio value="naturalPerson" />}
+              />
+              <FormControlLabel
+                label={t('forms.checkout.fields.customerType.options.juridicalPerson')}
+                control={<Radio value="juridicalPerson" />}
+              />
             </RadioGroup>
           </FormControl>
         </Box>
@@ -318,17 +352,23 @@ export const CheckoutForm: React.FC = () => {
 
           <Box>
             <FormControl>
-              <FormLabel sx={sx.formLabel}>Payment Method</FormLabel>
+              <FormLabel sx={sx.formLabel}>{t('forms.checkout.fields.paymentMethod.title')}</FormLabel>
               <RadioGroup
                 row
                 name="paymentMethod"
                 value={formik.values.paymentMethod}
                 onChange={e => formik.setFieldValue('paymentMethod', e.target.value)}
               >
-                <FormControlLabel label="Cash" control={<Radio value="cash" />} />
+                <FormControlLabel
+                  label={t('forms.checkout.fields.paymentMethod.options.cash')}
+                  control={<Radio value="cash" />}
+                />
 
                 {formik.values.customerType === 'juridicalPerson' && (
-                  <FormControlLabel label="Account" control={<Radio value="account" />} />
+                  <FormControlLabel
+                    label={t('forms.checkout.fields.paymentMethod.options.account')}
+                    control={<Radio value="account" />}
+                  />
                 )}
               </RadioGroup>
             </FormControl>
@@ -339,11 +379,9 @@ export const CheckoutForm: React.FC = () => {
               fontWeight={theme => theme.typography.fontWeightLight}
               mt={2}
             >
-              {formik.values.paymentMethod === 'account'
-                ? "An invoice containing the seller's payment details will be provided, \
-                allowing you to transfer funds for the items listed in the invoice."
-                : 'Payment is made in cash at the time of order receipt. The confirmation of your payment \
-                is a fiscal receipt handed to you upon receipt and payment of the order.'}
+              {formik.values.paymentMethod === 'cash'
+                ? t('misc.hints.paymentMethodCash')
+                : t('misc.hints.paymentMethodAccount')}
             </Typography>
           </Box>
         </Box>
@@ -365,7 +403,7 @@ export const CheckoutForm: React.FC = () => {
               fontSize={theme => theme.typography.font.L}
               fontWeight={theme => theme.typography.fontWeightRegular}
             >
-              Customer Info
+              {t('forms.checkout.fields.customerInfo.title')}
             </Typography>
 
             <Box mt={4}>
@@ -453,7 +491,8 @@ export const CheckoutForm: React.FC = () => {
             }
             label={
               <Typography component="span">
-                Agree to have my <Link href="#">personal data</Link> processed
+                {t('forms.common.processAgreement.text')}
+                <Link href="#">{t('forms.common.processAgreement.link')}</Link>
               </Typography>
             }
           />
@@ -465,7 +504,7 @@ export const CheckoutForm: React.FC = () => {
         </Box>
 
         <PrimaryButton sx={sx.submitButton} type="submit" disabled={formik.isSubmitting}>
-          Checkout
+          {t('buttons.submit')}
         </PrimaryButton>
       </Box>
     </form>

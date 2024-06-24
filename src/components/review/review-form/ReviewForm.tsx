@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { formatISO } from 'date-fns';
@@ -37,28 +38,34 @@ type FormValuesType = {
 
 const MAX_UPLOAD_FILES = 10;
 
-const validationSchema = yup.object({
-  name: yup
-    .string()
-    .matches(/^[a-zA-Z\\.\s-]+$/, 'Invalid name')
-    .trim()
-    .required('Name is required'),
-  email: yup.string().trim().required('Email is required').email('Invalid email'),
-
-  ratings: yup.object().shape({
-    serviceQuality: yup.number().min(1, 'Service quality rating is required'),
-    productQuality: yup.number().min(1, 'Product quality rating is required'),
-    deliveryQuality: yup.number().min(1, 'Delivery quality rating is required'),
-  }),
-
-  process: yup.boolean().oneOf([true], 'You must agree to have your personal data processed'),
-});
-
 export const ReviewForm: React.FC = () => {
   const theme = useTheme();
 
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => formik.resetForm(), [i18n.language]);
+
   const { closeModal } = useModal();
   const { openSnackbar } = useSnackbar();
+
+  const validationSchema = useMemo(() => {
+    return yup.object({
+      name: yup
+        .string()
+        .matches(/^[a-zа-яA-ZА-Я\\.\s-]+$/, t('formValidation.invalidField'))
+        .trim()
+        .required(t('formValidation.requiredField')),
+      email: yup.string().trim().required(t('formValidation.requiredField')).email(t('formValidation.invalidField')),
+
+      ratings: yup.object().shape({
+        serviceQuality: yup.number().min(1, t('formValidation.requiredField')),
+        productQuality: yup.number().min(1, t('formValidation.requiredField')),
+        deliveryQuality: yup.number().min(1, t('formValidation.requiredField')),
+      }),
+
+      process: yup.boolean().oneOf([true], t('formValidation.requiredProcessAgreement')),
+    });
+  }, [i18n.language]);
 
   const formik = useFormik<FormValuesType>({
     initialValues: {
@@ -93,7 +100,7 @@ export const ReviewForm: React.FC = () => {
 
         openSnackbar(SNACKBARS.REVIEW_FORM, {
           severity: 'success',
-          message: 'Review sent successfully',
+          message: t('messages.formSubmitSuccess'),
           anchorOrigin: { vertical: 'top', horizontal: 'right' },
           autoHideDuration: 4000,
         });
@@ -104,7 +111,7 @@ export const ReviewForm: React.FC = () => {
 
         openSnackbar(SNACKBARS.REVIEW_FORM, {
           severity: 'error',
-          message: 'Server error',
+          message: t('messages.serverError'),
           anchorOrigin: { vertical: 'top', horizontal: 'right' },
           autoHideDuration: 4000,
         });
@@ -124,7 +131,7 @@ export const ReviewForm: React.FC = () => {
       newFiles = newFiles.slice(0, MAX_UPLOAD_FILES - formik.values.files.length);
       openSnackbar(SNACKBARS.REVIEW_FORM, {
         severity: 'error',
-        message: `Maximum upload limit of ${MAX_UPLOAD_FILES} files reached`,
+        message: i18n.t('messages.uploadLimitError', { maxUploadFiles: MAX_UPLOAD_FILES }),
         anchorOrigin: { vertical: 'top', horizontal: 'right' },
         autoHideDuration: 4000,
       });
@@ -138,7 +145,7 @@ export const ReviewForm: React.FC = () => {
       newFiles = newFiles.filter(file => !duplicates.includes(file.name));
       openSnackbar(SNACKBARS.REVIEW_FORM, {
         severity: 'error',
-        message: 'Duplicate files are not allowed',
+        message: t('messages.duplicateFilesError'),
         anchorOrigin: { vertical: 'top', horizontal: 'right' },
         autoHideDuration: 4000,
       });
@@ -166,7 +173,7 @@ export const ReviewForm: React.FC = () => {
             required
             id="name"
             name="name"
-            label="Name"
+            label={t('forms.review.fields.name')}
             type="text"
             value={formik.values.name}
             onChange={formik.handleChange}
@@ -183,7 +190,7 @@ export const ReviewForm: React.FC = () => {
             required
             id="email"
             name="email"
-            label="Email"
+            label={t('forms.review.fields.email')}
             type="text"
             placeholder="example@domain.tld"
             value={formik.values.email}
@@ -196,7 +203,6 @@ export const ReviewForm: React.FC = () => {
           />
         </Box>
 
-        {/* TODO (L): Number conversion */}
         <FormControl
           error={
             formik.touched.ratings &&
@@ -210,7 +216,7 @@ export const ReviewForm: React.FC = () => {
         >
           <FormControlLabel
             required
-            label="Service quality"
+            label={t('forms.review.fields.serviceQuality')}
             labelPlacement="top"
             control={
               <LabeledRating
@@ -224,7 +230,7 @@ export const ReviewForm: React.FC = () => {
           />
           <FormControlLabel
             required
-            label="Product quality"
+            label={t('forms.review.fields.productQuality')}
             labelPlacement="top"
             control={
               <LabeledRating
@@ -238,7 +244,7 @@ export const ReviewForm: React.FC = () => {
           />
           <FormControlLabel
             required
-            label="Delivery quality"
+            label={t('forms.review.fields.deliveryQuality')}
             labelPlacement="top"
             control={
               <LabeledRating
@@ -255,7 +261,7 @@ export const ReviewForm: React.FC = () => {
             (formik.errors.ratings?.serviceQuality ||
               formik.errors.ratings?.productQuality ||
               formik.errors.ratings?.deliveryQuality) && (
-              <FormHelperText sx={sx.error}>All ratings are required</FormHelperText>
+              <FormHelperText sx={sx.error}>{t('formValidation.requiredField')}</FormHelperText>
             )}
         </FormControl>
 
@@ -267,7 +273,7 @@ export const ReviewForm: React.FC = () => {
             maxRows={8}
             id="review"
             name="review"
-            label="Review"
+            label={t('forms.review.fields.review')}
             type="text"
             value={formik.values.review || ''}
             onChange={formik.handleChange}
@@ -279,7 +285,7 @@ export const ReviewForm: React.FC = () => {
         <Box position="relative" display="flex" flexDirection="column" mb={6}>
           <Box>
             <FileUploadButton
-              label="Attach files"
+              label={t('buttons.attachFiles')}
               multiple={true}
               accept={'image/*'}
               onInput={handleFileInput}
@@ -313,14 +319,13 @@ export const ReviewForm: React.FC = () => {
             ))}
           </Box>
 
-          {/* TODO */}
           {formik.values.files.length > 1 && (
             <Button
               color="primary"
               onClick={() => formik.setFieldValue('files', [])}
               sx={sx.deleteAllFilesButton as SxProps}
             >
-              Delete All Files
+              {t('buttons.deleteAllFiles')}
             </Button>
           )}
         </Box>
@@ -338,7 +343,8 @@ export const ReviewForm: React.FC = () => {
             }
             label={
               <Typography component="span">
-                Agree to have my <Link href="#">personal data</Link> processed
+                {t('forms.common.processAgreement.text')}
+                <Link href="#">{t('forms.common.processAgreement.link')}</Link>
               </Typography>
             }
           />
@@ -349,7 +355,7 @@ export const ReviewForm: React.FC = () => {
           )}
         </Box>
         <PrimaryButton sx={sx.submitButton} type="submit" disabled={formik.isSubmitting}>
-          Submit
+          {t('buttons.submit')}
         </PrimaryButton>
       </Box>
     </form>
@@ -370,7 +376,8 @@ const sx = {
   ratingsControlLabel: { alignItems: 'flex-start', m: 0 },
 
   fileUploadButton: {
-    width: '30%',
+    fontSize: THEME.typography.font.S,
+    width: '35%',
   },
 
   deleteAllFilesButton: {

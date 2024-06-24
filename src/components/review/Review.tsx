@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { useTheme, Avatar, Box, Typography, ImageList, ImageListItem, Rating } from '@mui/material';
 
@@ -6,6 +7,8 @@ import { BaseReviewsDTO } from '../../api';
 
 export const Review: React.FC<BaseReviewsDTO> = ({ name, date, ratings, review, files }) => {
   const theme = useTheme();
+
+  const { t } = useTranslation();
 
   const formattedDate = format(new Date(date), 'dd.MM.yyyy');
 
@@ -28,20 +31,21 @@ export const Review: React.FC<BaseReviewsDTO> = ({ name, date, ratings, review, 
           <Rating value={averageRating} readOnly precision={0.5} />
         </Box>
 
-        <Box width="40%" display="flex" justifyContent="space-between" mb={3}>
+        <Box width="60%" display="flex" justifyContent="space-between" mb={3}>
           <Box>
-            <Typography variant="subtitle1">Service quality</Typography>
-            <Rating value={serviceQuality} readOnly />
+            {/* TODO */}
+            <Typography variant="subtitle1">{t('forms.review.fields.serviceQuality')}</Typography>
+            <Rating value={Number(serviceQuality)} readOnly />
           </Box>
 
           <Box>
-            <Typography variant="subtitle1">Product quality</Typography>
-            <Rating value={productQuality} readOnly />
+            <Typography variant="subtitle1">{t('forms.review.fields.productQuality')}</Typography>
+            <Rating value={Number(productQuality)} readOnly />
           </Box>
 
           <Box>
-            <Typography variant="subtitle1">Delivery quality</Typography>
-            <Rating value={deliveryQuality} readOnly />
+            <Typography variant="subtitle1">{t('forms.review.fields.deliveryQuality')}</Typography>
+            <Rating value={Number(deliveryQuality)} readOnly />
           </Box>
         </Box>
 

@@ -1,14 +1,16 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, Rating, Typography } from '@mui/material';
 import type { RatingProps } from '@mui/material';
 
 type LabeledRatingType = RatingProps;
 
-const marks = ['No rating', 'Awful', 'Poor', 'Average', 'Good', 'Excellent'];
-
 export const LabeledRating: React.FC<LabeledRatingType> = ({ name, value = 0, onChange, onBlur, ...props }) => {
   const [hover, setHover] = useState(-1);
+
+  const { t, i18n } = useTranslation();
+  const marks: string[] = useMemo(() => t('misc.marks', { returnObjects: true }), [i18n.language]);
+
   const idx = hover !== -1 ? hover : Number(value);
 
   return (

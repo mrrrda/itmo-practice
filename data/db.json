@@ -71,6 +71,19 @@
         }
       ],
       "date": "2024-06-20"
+    },
+    {
+      "name": "Алексей",
+      "email": "a@a",
+      "review": "",
+      "ratings": {
+        "serviceQuality": "3",
+        "productQuality": "4",
+        "deliveryQuality": "3"
+      },
+      "files": [],
+      "date": "2024-06-24",
+      "id": "-WdJ3BL"
     }
   ],
   "orders": [
@@ -124,6 +137,20 @@
       },
       "date": "2024-06-24",
       "id": "nsyc0UN"
+    },
+    {
+      "customerType": "juridicalPerson",
+      "paymentMethod": "account",
+      "customerInfo": {
+        "companyName": "ТестКомпания4",
+        "INN": "1235125312",
+        "KPP": "214521454",
+        "contactPerson": "Алексей Павлович",
+        "email": "a@a",
+        "phone": "+7 (348) 590-25-41"
+      },
+      "date": "2024-06-24",
+      "id": "KH0BPgH"
     }
   ]
 }
