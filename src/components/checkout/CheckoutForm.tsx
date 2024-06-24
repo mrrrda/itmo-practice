@@ -1,11 +1,10 @@
+import React from 'react';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { formatISO } from 'date-fns';
 import set from 'lodash/set';
-
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
-
 import {
   useTheme,
   Box,
@@ -20,13 +19,46 @@ import {
   Typography,
 } from '@mui/material';
 
+import { THEME } from '../../theme';
 import { SNACKBARS } from '../../constants';
 import { useSnackbar } from '../../hooks';
-import { postOrders } from '../../api';
-
+import {
+  CommonCustomerInfoType,
+  CustomerType,
+  JuridicalPersonCustomerInfoType,
+  NaturalPersonCustomerInfoType,
+  PaymentMethodType,
+  PostOrdersDTO,
+  postOrders,
+} from '../../api';
 import { Radio, PrimaryButton, PhoneMask } from '../common';
 
-const NATURAL_PERSON_FIELDS = [
+type FormValuesType = {
+  customerType: CustomerType;
+  paymentMethod: PaymentMethodType;
+  customerInfo: {
+    naturalPerson: NaturalPersonCustomerInfoType;
+    juridicalPerson: JuridicalPersonCustomerInfoType;
+    common: CommonCustomerInfoType;
+  };
+  process: boolean;
+};
+
+type FormFieldType = {
+  id: string;
+  name: string;
+  label: string;
+  type: string;
+  placeholder?: string;
+  required?: boolean;
+  fullWidth?: boolean;
+  multiline?: boolean;
+  minRows?: number;
+  maxRows?: number;
+  InputProps?: Record<string, unknown>;
+};
+
+const NATURAL_PERSON_FIELDS: FormFieldType[] = [
   {
     id: 'fullName',
     name: 'fullName',
@@ -37,7 +69,7 @@ const NATURAL_PERSON_FIELDS = [
   },
 ];
 
-const JURIDICAL_PERSON_FIELDS = [
+const JURIDICAL_PERSON_FIELDS: FormFieldType[] = [
   {
     id: 'companyName',
     name: 'companyName',
@@ -70,7 +102,7 @@ const JURIDICAL_PERSON_FIELDS = [
   },
 ];
 
-const COMMON_FIELDS = [
+const COMMON_FIELDS: FormFieldType[] = [
   {
     required: true,
     id: 'email',
@@ -125,11 +157,11 @@ const validationSchema = yup.object().shape({
           companyName: yup.string().trim().required('Company name is required'),
           INN: yup
             .string()
-            .trim()
+            .nullable()
             .matches(/^(\d{10}|\d{12})$/, { message: 'Invalid INN', excludeEmptyString: true }),
           KPP: yup
             .string()
-            .trim()
+            .nullable()
             .matches(/^\d{4}[\dA-Z][\dA-Z]\d{3}$/, { message: 'Invalid KPP', excludeEmptyString: true }),
           contactPerson: yup
             .string()
@@ -151,12 +183,12 @@ const validationSchema = yup.object().shape({
   process: yup.boolean().oneOf([true], 'You must agree to have your personal data processed'),
 });
 
-export const CheckoutForm = () => {
+export const CheckoutForm: React.FC = () => {
   const theme = useTheme();
 
   const { openSnackbar } = useSnackbar();
 
-  const formik = useFormik({
+  const formik = useFormik<FormValuesType>({
     initialValues: {
       customerType: 'naturalPerson',
       paymentMethod: 'cash',
@@ -168,15 +200,15 @@ export const CheckoutForm = () => {
 
         juridicalPerson: {
           companyName: '',
-          INN: '',
-          KPP: '',
+          INN: undefined,
+          KPP: undefined,
           contactPerson: '',
         },
 
         common: {
           email: '',
           phone: '',
-          comment: '',
+          comment: undefined,
         },
       },
 
@@ -186,38 +218,38 @@ export const CheckoutForm = () => {
     validate: async values => {
       try {
         await validationSchema.validate(values, { abortEarly: false, context: { customerType: values.customerType } });
-      } catch (e) {
+      } catch (e: any) {
         if (e.name !== 'ValidationError') {
           throw e;
         }
 
-        return e.inner.reduce((errors, { path, message }) => set(errors, path, message), {});
+        return (e as yup.ValidationError).inner.reduce(
+          (errors, { path, message }) => set(errors, path as string, message),
+          {},
+        );
       }
+
+      return {};
     },
 
     onSubmit: async values => {
       try {
         const date = formatISO(Date.now(), { representation: 'date' });
 
-        let data = {
+        const data: PostOrdersDTO = {
           customerType: values.customerType,
           paymentMethod: values.paymentMethod,
           customerInfo: {
-            ...(values.customerType === 'naturalPerson' && {
-              fullName: values.customerInfo.naturalPerson.fullName,
-            }),
-
-            ...(values.customerType === 'juridicalPerson' && {
-              companyName: values.customerInfo.juridicalPerson.companyName,
-              INN: values.customerInfo.juridicalPerson.INN,
-              KPP: values.customerInfo.juridicalPerson.KPP,
-              contactPerson: values.customerInfo.juridicalPerson.contactPerson,
-            }),
-
+            ...(values.customerType === 'naturalPerson'
+              ? { fullName: values.customerInfo.naturalPerson.fullName }
+              : {
+                  companyName: values.customerInfo.juridicalPerson.companyName,
+                  INN: values.customerInfo.juridicalPerson.INN,
+                  KPP: values.customerInfo.juridicalPerson.KPP,
+                  contactPerson: values.customerInfo.juridicalPerson.contactPerson,
+                }),
             ...values.customerInfo.common,
           },
-
-          process: values.process,
           date: date,
         };
 
@@ -232,7 +264,7 @@ export const CheckoutForm = () => {
           autoHideDuration: 4000,
         });
       } catch (e) {
-        console.log('Error submitting form:', e);
+        console.error('Error submitting form:', e);
 
         openSnackbar(SNACKBARS.CHECKOUT_FORM, {
           severity: 'error',
@@ -308,8 +340,10 @@ export const CheckoutForm = () => {
               mt={2}
             >
               {formik.values.paymentMethod === 'account'
-                ? 'An invoice containing the seller&#39;s payment details will be provided, allowing you to transfer funds for the items listed in the invoice.'
-                : 'Payment is made in cash at the time of order receipt. The confirmation of your payment is a fiscal receipt handed to you upon receipt and payment of the order.'}
+                ? "An invoice containing the seller's payment details will be provided, \
+                allowing you to transfer funds for the items listed in the invoice."
+                : 'Payment is made in cash at the time of order receipt. The confirmation of your payment \
+                is a fiscal receipt handed to you upon receipt and payment of the order.'}
             </Typography>
           </Box>
         </Box>
@@ -340,7 +374,9 @@ export const CheckoutForm = () => {
                     <Box key={props.id} position="relative" mb={4}>
                       <TextField
                         name={`customerInfo.naturalPerson.${name}`}
-                        value={formik.values.customerInfo.naturalPerson[name] || ''}
+                        value={
+                          formik.values.customerInfo.naturalPerson[name as keyof NaturalPersonCustomerInfoType] || ''
+                        }
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         error={
@@ -349,9 +385,9 @@ export const CheckoutForm = () => {
                         }
                         helperText={
                           formik.getFieldMeta(`customerInfo.naturalPerson.${name}`).touched &&
-                          formik.errors.customerInfo?.naturalPerson?.[name]
+                          formik.errors.customerInfo?.naturalPerson?.[name as keyof NaturalPersonCustomerInfoType]
                         }
-                        FormHelperTextProps={{ sx: sx.error }}
+                        FormHelperTextProps={formHelperTextProps}
                         {...props}
                       />
                     </Box>
@@ -360,7 +396,10 @@ export const CheckoutForm = () => {
                     <Box key={props.id} position="relative" mb={4}>
                       <TextField
                         name={`customerInfo.juridicalPerson.${name}`}
-                        value={formik.values.customerInfo.juridicalPerson[name]}
+                        value={
+                          formik.values.customerInfo.juridicalPerson[name as keyof JuridicalPersonCustomerInfoType] ||
+                          ''
+                        }
                         onChange={formik.handleChange}
                         onBlur={formik.handleBlur}
                         error={
@@ -369,9 +408,9 @@ export const CheckoutForm = () => {
                         }
                         helperText={
                           formik.getFieldMeta(`customerInfo.juridicalPerson.${name}`).touched &&
-                          formik.errors.customerInfo?.juridicalPerson?.[name]
+                          formik.errors.customerInfo?.juridicalPerson?.[name as keyof JuridicalPersonCustomerInfoType]
                         }
-                        FormHelperTextProps={{ sx: sx.error }}
+                        FormHelperTextProps={formHelperTextProps}
                         {...props}
                       />
                     </Box>
@@ -381,7 +420,7 @@ export const CheckoutForm = () => {
                 <Box key={props.id} position="relative" mb={index == COMMON_FIELDS.length - 1 ? 0 : 4}>
                   <TextField
                     name={`customerInfo.common.${name}`}
-                    value={formik.values.customerInfo.common[name]}
+                    value={formik.values.customerInfo.common[name as keyof CommonCustomerInfoType] || ''}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     error={
@@ -390,9 +429,9 @@ export const CheckoutForm = () => {
                     }
                     helperText={
                       formik.getFieldMeta(`customerInfo.common.${name}`).touched &&
-                      formik.errors.customerInfo?.common?.[name]
+                      formik.errors.customerInfo?.common?.[name as keyof CommonCustomerInfoType]
                     }
-                    FormHelperTextProps={{ sx: sx.error }}
+                    FormHelperTextProps={formHelperTextProps}
                     {...props}
                   />
                 </Box>
@@ -413,7 +452,7 @@ export const CheckoutForm = () => {
               />
             }
             label={
-              <Typography variant="span">
+              <Typography component="span">
                 Agree to have my <Link href="#">personal data</Link> processed
               </Typography>
             }
@@ -441,23 +480,25 @@ const sx = {
   },
 
   formLabel: {
-    color: theme => theme.palette.text.primary,
-    fontSize: theme => theme.typography.font.L,
+    color: THEME.palette.text.primary,
+    fontSize: THEME.typography.font.L,
 
     '&.Mui-focused': {
-      color: theme => theme.palette.text.primary,
+      color: THEME.palette.text.primary,
     },
   },
 
-  error: theme => ({
+  error: {
     position: 'absolute',
     top: '-2em',
     right: 0,
-    fontSize: theme.typography.font.XS,
+    fontSize: THEME.typography.font.XS,
     m: 0,
-  }),
+  },
 
   submitButton: {
     width: '20%',
   },
 };
+
+const formHelperTextProps = { sx: sx.error };

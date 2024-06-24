@@ -1,7 +1,7 @@
+import React from 'react';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { formatISO } from 'date-fns';
-
 import {
   useTheme,
   Box,
@@ -15,16 +15,25 @@ import {
   IconButton,
   FormControl,
 } from '@mui/material';
-
+import type { SxProps } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+import { THEME } from '../../../theme';
 import { MODALS, SNACKBARS } from '../../../constants';
 import { useModal, useSnackbar } from '../../../hooks';
 import { base64FileEncoder } from '../../../utils';
-import { postReviews } from '../../../api';
-
+import { FileObjectType, PostReviewsDTO, RatingsType, postReviews } from '../../../api';
 import { PrimaryButton, FileUploadButton } from '../../common';
 import { LabeledRating } from './components';
+
+type FormValuesType = {
+  name: string;
+  email: string;
+  review: string | undefined;
+  ratings: RatingsType;
+  process: boolean;
+  files: FileObjectType[];
+};
 
 const MAX_UPLOAD_FILES = 10;
 
@@ -45,30 +54,38 @@ const validationSchema = yup.object({
   process: yup.boolean().oneOf([true], 'You must agree to have your personal data processed'),
 });
 
-export const ReviewForm = () => {
+export const ReviewForm: React.FC = () => {
   const theme = useTheme();
 
   const { closeModal } = useModal();
   const { openSnackbar } = useSnackbar();
 
-  const formik = useFormik({
+  const formik = useFormik<FormValuesType>({
     initialValues: {
       name: '',
       email: '',
-      review: '',
+      review: undefined,
       ratings: {
         serviceQuality: 0,
         productQuality: 0,
         deliveryQuality: 0,
       },
       process: false,
-      files: [],
+      files: [] as FileObjectType[],
     },
     validationSchema: validationSchema,
     onSubmit: async values => {
       try {
         const date = formatISO(Date.now(), { representation: 'date' });
-        const data = { ...values, date };
+
+        const data: PostReviewsDTO = {
+          name: values.name,
+          email: values.email,
+          review: values.review,
+          ratings: values.ratings,
+          files: values.files,
+          date,
+        };
 
         await postReviews(data);
 
@@ -83,7 +100,7 @@ export const ReviewForm = () => {
 
         closeModal(MODALS.REVIEW_FORM);
       } catch (e) {
-        console.log('Error submitting form:', e);
+        console.error('Error submitting form:', e);
 
         openSnackbar(SNACKBARS.REVIEW_FORM, {
           severity: 'error',
@@ -95,8 +112,11 @@ export const ReviewForm = () => {
     },
   });
 
-  const handleFileInput = async e => {
-    let newFiles = Array.from(e.target.files);
+  const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    let newFiles: File[] = Array.from(files);
 
     const totalFiles = formik.values.files.length + newFiles.length;
 
@@ -153,7 +173,7 @@ export const ReviewForm = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.name && Boolean(formik.errors.name)}
             helperText={formik.touched.name && formik.errors.name}
-            FormHelperTextProps={{ sx: sx.error }}
+            FormHelperTextProps={formHelperTextProps}
             fullWidth
           />
         </Box>
@@ -171,7 +191,7 @@ export const ReviewForm = () => {
             onBlur={formik.handleBlur}
             error={formik.touched.email && Boolean(formik.errors.email)}
             helperText={formik.touched.email && formik.errors.email}
-            FormHelperTextProps={{ sx: sx.error }}
+            FormHelperTextProps={formHelperTextProps}
             fullWidth
           />
         </Box>
@@ -249,7 +269,7 @@ export const ReviewForm = () => {
             name="review"
             label="Review"
             type="text"
-            value={formik.values.review}
+            value={formik.values.review || ''}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             fullWidth
@@ -260,7 +280,7 @@ export const ReviewForm = () => {
           <Box>
             <FileUploadButton
               label="Attach files"
-              isMultiple={true}
+              multiple={true}
               accept={'image/*'}
               onInput={handleFileInput}
               sx={sx.fileUploadButton}
@@ -293,8 +313,13 @@ export const ReviewForm = () => {
             ))}
           </Box>
 
+          {/* TODO */}
           {formik.values.files.length > 1 && (
-            <Button color="primary" sx={sx.deleteAllFilesButton} onClick={() => formik.setFieldValue('files', [])}>
+            <Button
+              color="primary"
+              onClick={() => formik.setFieldValue('files', [])}
+              sx={sx.deleteAllFilesButton as SxProps}
+            >
               Delete All Files
             </Button>
           )}
@@ -312,7 +337,7 @@ export const ReviewForm = () => {
               />
             }
             label={
-              <Typography variant="span">
+              <Typography component="span">
                 Agree to have my <Link href="#">personal data</Link> processed
               </Typography>
             }
@@ -348,23 +373,25 @@ const sx = {
     width: '30%',
   },
 
-  deleteAllFilesButton: theme => ({
+  deleteAllFilesButton: {
     alignSelf: 'flex-end',
-    fontSize: theme.typography.font.S,
-    fontWeight: theme.typography.fontWeightRegular,
+    fontSize: THEME.typography.font.S,
+    fontWeight: THEME.typography.fontWeightRegular,
     textTransform: 'none',
     p: 0,
-  }),
+  },
 
-  error: theme => ({
+  error: {
     position: 'absolute',
     top: '-2em',
     right: 0,
-    fontSize: theme.typography.font.XS,
+    fontSize: THEME.typography.font.XS,
     m: 0,
-  }),
+  },
 
   submitButton: {
     width: '20%',
   },
 };
+
+const formHelperTextProps = { sx: sx.error };

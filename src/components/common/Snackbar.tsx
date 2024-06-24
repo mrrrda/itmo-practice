@@ -1,7 +1,12 @@
+import React from 'react';
 import { styled } from '@mui/material';
+import MuiAlert, { type AlertProps as MuiAlertProps } from '@mui/material/Alert';
+import MuiSnackbar, { type SnackbarProps as MuiSnackbarProps } from '@mui/material/Snackbar';
 
-import MuiAlert from '@mui/material/Alert';
-import MuiSnackbar from '@mui/material/Snackbar';
+export type SnackbarProps = MuiSnackbarProps &
+  Pick<MuiAlertProps, 'severity' | 'onClose'> & {
+    message: MuiAlertProps['children'];
+  };
 
 const Alert = styled(MuiAlert)(({ theme }) => ({
   display: 'flex',
@@ -17,7 +22,7 @@ const Alert = styled(MuiAlert)(({ theme }) => ({
   },
 }));
 
-export const Snackbar = ({ open, onClose, severity, message, ...props }) => (
+export const Snackbar: React.FC<SnackbarProps> = ({ open, onClose, severity, message, ...props }) => (
   <MuiSnackbar open={open} onClose={onClose} {...props}>
     <Alert severity={severity} variant="filled" onClose={onClose}>
       {message}

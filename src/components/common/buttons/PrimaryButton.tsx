@@ -1,6 +1,6 @@
-import { Button, styled } from '@mui/material';
+import { Button as MuiButton, styled } from '@mui/material';
 
-export const PrimaryButton = styled(Button)(({ theme }) => ({
+export const PrimaryButton = styled(MuiButton)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
   color: theme.palette.common.white,
   padding: '0.375rem 1rem',

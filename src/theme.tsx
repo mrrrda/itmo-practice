@@ -1,9 +1,38 @@
 import { createTheme } from '@mui/material/styles';
-
+import { Theme } from '@mui/material/styles/createTheme.d';
+import { Typography } from '@mui/material/styles/createTypography.d';
 import StarIcon from '@mui/icons-material/Star';
 
+declare module '@mui/material/styles' {
+  interface Theme {
+    typography: Typography & {
+      font: {
+        XXS: string;
+        XS: string;
+        S: string;
+        M: string;
+        L: string;
+        XL: string;
+      };
+    };
+  }
+}
+
+declare module '@mui/material/styles/createTypography' {
+  interface TypographyOptions {
+    font: {
+      XXS: string;
+      XS: string;
+      S: string;
+      M: string;
+      L: string;
+      XL: string;
+    };
+  }
+}
+
 // TODO (L): Spacings
-export const THEME = createTheme({
+export const THEME: Theme = createTheme({
   palette: {
     primary: {
       main: '#5073E1',

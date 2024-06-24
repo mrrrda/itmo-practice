@@ -1,29 +1,33 @@
+import React from 'react';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
-
 import { useTheme, Box, Divider, Skeleton, Typography, Button } from '@mui/material';
 
+import { THEME } from '../theme';
 import { MODALS } from '../constants';
 import { useModal } from '../hooks';
 import { getReviews } from '../api';
-
 import { PrimaryButton } from '../components/common';
 import { Review } from '../components/review';
 import { CreateReviewModal } from '../components/modals';
 
 const LIMIT = 2;
 
-export const ReviewPage = () => {
+export const ReviewPage: React.FC = () => {
   const [page, setPage] = useState(1);
 
   const theme = useTheme();
   const { openModal } = useModal();
 
-  const { isLoading, isError, data, isFetched } = useQuery(['reviews', page, LIMIT], () => getReviews(page, LIMIT), {
-    keepPreviousData: true,
-    refetchOnWindowFocus: false,
-    retry: 2,
-  });
+  const { isLoading, isError, data, isFetched } = useQuery(
+    ['reviews', page, LIMIT],
+    () => getReviews({ page, limit: LIMIT }),
+    {
+      keepPreviousData: true,
+      refetchOnWindowFocus: false,
+      retry: 2,
+    },
+  );
 
   const hasNext = data?.totalCount && data.totalCount > page * LIMIT;
 
@@ -59,19 +63,18 @@ export const ReviewPage = () => {
         </Box>
       ) : (
         <Box display="flex" flexDirection="column">
-          {data.reviews.length === 0 && page == 1 ? (
+          {data?.reviews.length === 0 && page == 1 ? (
             <Typography variant="body1" sx={sx.noReviewsMessage}>
               No reviews yet. Be the first to leave a review!
             </Typography>
           ) : (
-            data.reviews.map(data => (
-              <Box key={data.id} mb={4} sx={{ opacity: isFetched ? 1 : 0.5 }}>
+            data?.reviews.map(data => (
+              <Box key={data.id} mb={4} sx={isFetched ? undefined : sx.reviewsWrapperFetching}>
                 <Review {...data} />
               </Box>
             ))
           )}
 
-          {/* Q: isPreviousData */}
           <Box display="flex" justifyContent="space-between">
             <Box>{page !== 1 && <Button onClick={() => setPage(page - 1)}>Prev</Button>}</Box>
             <Box>
@@ -93,13 +96,17 @@ const sx = {
     width: '15%',
   },
 
-  divider: theme => ({
+  divider: {
     flexGrow: 1,
-    borderColor: theme.palette.grey[400],
+    borderColor: THEME.palette.grey[400],
     ml: 6,
-  }),
+  },
 
   skeleton: { mb: 4 },
+
+  reviewsWrapperFetching: {
+    opacity: 0.5,
+  },
 
   noReviewsMessage: { alignSelf: 'center' },
 };

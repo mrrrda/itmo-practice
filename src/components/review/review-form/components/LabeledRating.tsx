@@ -1,18 +1,15 @@
+import React from 'react';
 import { useState } from 'react';
-
 import { Box, Rating, Typography } from '@mui/material';
+import type { RatingProps } from '@mui/material';
 
-const marks = {
-  0: 'No rating',
-  1: 'Awful',
-  2: 'Poor',
-  3: 'Average',
-  4: 'Good',
-  5: 'Excellent',
-};
+type LabeledRatingType = RatingProps;
 
-export const LabeledRating = ({ value, onChange, onBlur, name, ...props }) => {
+const marks = ['No rating', 'Awful', 'Poor', 'Average', 'Good', 'Excellent'];
+
+export const LabeledRating: React.FC<LabeledRatingType> = ({ name, value = 0, onChange, onBlur, ...props }) => {
   const [hover, setHover] = useState(-1);
+  const idx = hover !== -1 ? hover : Number(value);
 
   return (
     <Box display="flex">
@@ -30,7 +27,7 @@ export const LabeledRating = ({ value, onChange, onBlur, name, ...props }) => {
           —
         </Typography>
         <Typography color="textSecondary" component="span" variant="body2" ml={2}>
-          {marks[hover !== -1 ? hover : value]}
+          {marks[idx]}
         </Typography>
       </Box>
     </Box>

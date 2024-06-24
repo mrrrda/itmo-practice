@@ -1,6 +1,6 @@
+import React from 'react';
 import { styled } from '@mui/material';
-
-import MuiRadio from '@mui/material/Radio';
+import MuiRadio, { type RadioProps as MuiRadioProps } from '@mui/material/Radio';
 
 const RadioIcon = styled('span')(({ theme }) => ({
   width: '20px',
@@ -25,4 +25,6 @@ const RadioIcon = styled('span')(({ theme }) => ({
   },
 }));
 
-export const Radio = props => <MuiRadio icon={<RadioIcon />} checkedIcon={<RadioIcon />} {...props} />;
+export const Radio: React.FC<MuiRadioProps> = props => (
+  <MuiRadio icon={<RadioIcon />} checkedIcon={<RadioIcon />} {...props} />
+);

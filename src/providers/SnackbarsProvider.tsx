@@ -1,13 +1,28 @@
-import { createContext, useState } from 'react';
+import React, { createContext, useState } from 'react';
 
-import { Snackbar } from '../components/common';
+import { Snackbar, SnackbarProps } from '../components/common';
 
-export const SnackbarsContext = createContext({});
+type SnackbarState = {
+  isOpen: boolean;
+  args: SnackbarProps;
+};
 
-export const SnackbarsProvider = ({ children }) => {
-  const [snackbarsRegistry, setSnackbarsRegistry] = useState({});
+type SnackbarsContextType = {
+  openSnackbar: (key: string, args: SnackbarProps) => void;
+  closeSnackbar: (key: string) => void;
+  getSnackbarState: (key: string) => SnackbarState;
+};
 
-  const openSnackbar = (key, args = {}) =>
+type SnackbarsProviderProps = {
+  children: React.ReactNode;
+};
+
+export const SnackbarsContext = createContext<SnackbarsContextType>({} as SnackbarsContextType);
+
+export const SnackbarsProvider: React.FC<SnackbarsProviderProps> = ({ children }) => {
+  const [snackbarsRegistry, setSnackbarsRegistry] = useState<Record<string, SnackbarState>>({});
+
+  const openSnackbar = (key: string, args: SnackbarProps = {} as SnackbarProps): void =>
     setSnackbarsRegistry(prevSnackbarsRegistry => ({
       ...prevSnackbarsRegistry,
       [key]: {
@@ -16,7 +31,7 @@ export const SnackbarsProvider = ({ children }) => {
       },
     }));
 
-  const closeSnackbar = key =>
+  const closeSnackbar = (key: string): void =>
     setSnackbarsRegistry(prevSnackbarsRegistry => ({
       ...prevSnackbarsRegistry,
       [key]: {
@@ -25,7 +40,7 @@ export const SnackbarsProvider = ({ children }) => {
       },
     }));
 
-  const getSnackbarState = key =>
+  const getSnackbarState = (key: string): SnackbarState =>
     snackbarsRegistry[key] ?? {
       isOpen: false,
       args: {},

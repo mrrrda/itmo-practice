@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: ['.eslintrc.cjs', 'vite.config.ts'],
   parser: '@typescript-eslint/parser',
 
   parserOptions: {
@@ -11,40 +11,32 @@ module.exports = {
 
   extends: [
     'eslint:recommended',
-    'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
     'plugin:import/errors',
     'prettier',
   ],
-  plugins: ['react', '@typescript-eslint', 'import', 'prettier'],
+  plugins: ['@typescript-eslint', 'react', 'import', 'prettier'],
 
   settings: {
     react: {
       version: 'detect',
     },
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+    },
   },
 
   rules: {
     '@typescript-eslint/no-non-null-assertion': 'off',
-    '@typescript-eslint/naming-convention': [
-      'error',
-      {
-        selector: 'default',
-        format: ['camelCase', 'UPPER_CASE'],
-        leadingUnderscore: 'allow',
-      },
-      {
-        selector: 'variable',
-        format: ['camelCase', 'UPPER_CASE'],
-        leadingUnderscore: 'allow',
-      },
-    ],
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-shadow': 'off',
 
-    'max-len': ['error', { code: 120 }],
-    'prettier/prettier': ['error'],
+    'react/react-in-jsx-scope': 'off',
+    'react/prop-types': 'off',
 
     'no-console': ['warn', { allow: ['error', 'info'] }],
 
@@ -58,5 +50,8 @@ module.exports = {
         pathGroupsExcludedImportTypes: ['internal'],
       },
     ],
+
+    'max-len': ['error', { code: 120 }],
+    'prettier/prettier': ['error'],
   },
 };

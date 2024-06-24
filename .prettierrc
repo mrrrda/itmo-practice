@@ -1,9 +1,10 @@
 {
+  "tabWidth": 2,
+  "endOfLine": "auto",
   "arrowParens": "avoid",
   "trailingComma": "all",
   "semi": true,
   "useTabs": false,
-  "tabWidth": 2,
   "bracketSpacing": true,
   "singleQuote": true,
   "bracketSameLine": false,

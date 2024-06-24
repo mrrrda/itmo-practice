@@ -1,8 +1,9 @@
+import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 
 import { CheckoutForm } from '../components/checkout/CheckoutForm';
 
-export const CheckoutPage = () => {
+export const CheckoutPage: React.FC = () => {
   const theme = useTheme();
 
   return (

@@ -1,8 +1,10 @@
+import React from 'react';
 import { format } from 'date-fns';
-
 import { useTheme, Avatar, Box, Typography, ImageList, ImageListItem, Rating } from '@mui/material';
 
-export const Review = ({ name, date, ratings, review, files }) => {
+import { BaseReviewsDTO } from '../../api';
+
+export const Review: React.FC<BaseReviewsDTO> = ({ name, date, ratings, review, files }) => {
   const theme = useTheme();
 
   const formattedDate = format(new Date(date), 'dd.MM.yyyy');
