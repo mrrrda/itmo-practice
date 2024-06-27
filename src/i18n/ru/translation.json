@@ -1,0 +1,103 @@
+{
+  "formValidation": {
+    "invalidField": "Неверное поле",
+    "requiredField": "Обязательное поле",
+    "requiredProcessAgreement": "Вы должны согласиться на обработку персональных данных"
+  },
+
+  "messages": {
+    "serverError": "Ошибка сервера",
+    "fetchError": "Ошибка при получении данных",
+
+    "formSubmitSuccess": "Форма отправлена успешно",
+
+    "uploadLimitError": "Достигнут максимальный лимит загрузки: {{maxUploadFiles}} файлов",
+    "duplicateFilesError": "Дублирующиеся файлы не допускаются"
+  },
+
+  "buttons": {
+    "submit": "Отправить",
+
+    "attachFiles": "Прикрепить файлы",
+    "deleteAllFiles": "Удалить все файлы",
+
+    "paginationNext": "Далее",
+    "paginationPrev": "Назад"
+  },
+
+  "forms": {
+    "common": {
+      "processAgreement": {
+        "text": "Согласиться на обработку ",
+        "link": "персональных данных"
+      }
+    },
+
+    "review": {
+      "title": "Оставьте свой отзыв",
+      "fields": {
+        "name": "Имя",
+        "email": "Email",
+        "serviceQuality": "Качество обслуживания",
+        "productQuality": "Качество товара",
+        "deliveryQuality": "Качество доставки",
+        "review": "Отзыв"
+      }
+    },
+
+    "checkout": {
+      "fields": {
+        "customerType": {
+          "title": "Тип клиента",
+          "options": {
+            "naturalPerson": "Физическое лицо",
+            "juridicalPerson": "Юридическое лицо"
+          }
+        },
+        "paymentMethod": {
+          "title": "Способ оплаты",
+          "options": {
+            "cash": "Наличные",
+            "account": "Банковский счет"
+          }
+        },
+        "customerInfo": {
+          "title": "Информация о клиенте",
+          "fields": {
+            "fullName": "ФИО",
+            "companyName": "Название компании",
+            "KPP": "КПП",
+            "INN": "ИНН",
+            "contactPerson": "Контактное лицо",
+            "email": "Email",
+            "phoneNumber": "Телефон",
+            "comment": "Комментарий"
+          }
+        }
+      }
+    }
+  },
+
+  "pages": {
+    "reviews": {
+      "title": "Отзывы",
+      "leaveReviewButton": "Оставить отзыв",
+      "noReviewsMessage": "Пока нет отзывов. Вы можете быть первым!"
+    },
+
+    "checkout": {
+      "title": "Оформление заказа"
+    }
+  },
+
+  "misc": {
+    "marks": ["Без оценки", "Очень плохо", "Плохо", "Нормально", "Хорошо", "Отлично"],
+    "links": {
+      "personalData": "персональных данных"
+    },
+    "hints": {
+      "paymentMethodCash": "Оплата производится наличными деньгами, в момент получения заказа. Подтверждением оплаты является фискальный кассовый чек, вручаемый во время получения и оплаты заказа.",
+      "paymentMethodAccount": "Будет предоставлен счет, содержащий платежные реквизиты продавца, по которым Вы сможете осуществить перевод денежных средств за перечисленные в счете товары."
+    }
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "agreeText": "Agree to processed my ",
+  "personalDataText": "",
+
+  "formValidation": {
+    "invalidField": "Invalid field",
+    "requiredField": "Required field",
+    "requiredProcessAgreement": "You must agree to have your personal data processed"
+  },
+
+  "messages": {
+    "serverError": "Server error",
+    "fetchError": "Error fetching data",
+
+    "formSubmitSuccess": "Form submitted successfully",
+
+    "uploadLimitError": "Maximum upload limit reached: {{maxUploadFiles}} files",
+    "duplicateFilesError": "Duplicate files are not allowed"
+  },
+
+  "buttons": {
+    "submit": "Submit",
+
+    "attachFiles": "Attach files",
+    "deleteAllFiles": "Delete all files",
+
+    "paginationNext": "Next",
+    "paginationPrev": "Prev"
+  },
+
+  "forms": {
+    "common": {
+      "processAgreement": {
+        "text": "Agree to the processing of my ",
+        "link": "personal data"
+      }
+    },
+
+    "review": {
+      "title": "Leave your Review",
+      "fields": {
+        "name": "Name",
+        "email": "Email",
+        "serviceQuality": "Service quality",
+        "productQuality": "Product quality",
+        "deliveryQuality": "Delivery quality",
+        "review": "Review"
+      }
+    },
+
+    "checkout": {
+      "fields": {
+        "customerType": {
+          "title": "Customer type",
+          "options": {
+            "naturalPerson": "Natural person",
+            "juridicalPerson": "Juridical person"
+          }
+        },
+        "paymentMethod": {
+          "title": "Payment method",
+          "options": {
+            "cash": "Cash",
+            "account": "Account"
+          }
+        },
+        "customerInfo": {
+          "title": "Customer Info",
+          "fields": {
+            "fullName": "Full name",
+            "companyName": "Company name",
+            "KPP": "Tax Registration Reason Code (KPP)",
+            "INN": "Taxpayer Identification Number (INN)",
+            "contactPerson": "Contact person",
+            "email": "Email",
+            "phoneNumber": "Phone number",
+            "comment": "Comment"
+          }
+        }
+      }
+    }
+  },
+
+  "pages": {
+    "reviews": {
+      "title": "Reviews",
+      "leaveReviewButton": "Leave Review",
+      "noReviewsMessage": "No reviews yet. Be the first to leave a review!"
+    },
+
+    "checkout": {
+      "title": "Checkout"
+    }
+  },
+
+  "misc": {
+    "marks": ["No rating", "Awful", "Poor", "Average", "Good", "Excellent"],
+    "links": {
+      "personalData": "personal data"
+    },
+    "hints": {
+      "paymentMethodCash": "Payment is made in cash at the time of order receipt. The confirmation of your payment is a fiscal receipt handed to you upon receipt and payment of the order.",
+      "paymentMethodAccount": "An invoice containing the seller's payment details will be provided, allowing you to transfer funds for the items listed in the invoice."
+    }
+  }
+}
